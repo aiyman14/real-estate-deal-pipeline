@@ -1,0 +1,137 @@
+{
+  "schema_name": "inbound_purple",
+  "description": "Inbound deals extracted from IMs and teasers (purple sheets)",
+  "columns": [
+    { "name": "Index", "type": "integer", "required": false },
+    { "name": "Week nr.", "type": "integer", "required": false },
+
+    {
+      "name": "Date received",
+      "type": "date",
+      "required": true,
+      "format": "yyyy/mm/dd"
+    },
+
+    { "name": "Type", "type": "string", "required": false },
+
+    {
+      "name": "Project Name",
+      "type": "string",
+      "required": true
+    },
+
+    { "name": "Received by", "type": "string", "required": false },
+    { "name": "Seller", "type": "string", "required": false },
+    { "name": "Broker", "type": "string", "required": false },
+
+    {
+      "name": "Country",
+      "type": "enum",
+      "required": true,
+      "allowed_values": ["Sweden", "Denmark", "Finland"]
+    },
+
+    {
+      "name": "Location",
+      "type": "string",
+      "required": true,
+      "notes": "City-level only"
+    },
+
+    {
+      "name": "Portfolio",
+      "type": "boolean",
+      "required": false
+    },
+
+    { "name": "Address", "type": "string", "required": false },
+    { "name": "Postal code", "type": "string", "required": false },
+    { "name": "Property designation", "type": "string", "required": false },
+
+    {
+      "name": "Use",
+      "type": "enum",
+      "required": true,
+      "notes": "Normalized via property_type_map.yml"
+    },
+
+    {
+      "name": "Leasable area, sqm",
+      "type": "number",
+      "required": false
+    },
+
+    {
+      "name": "Base rent incl. index, CCY/sqm",
+      "type": "number",
+      "required": false
+    },
+
+    {
+      "name": "NOI, CCY",
+      "type": "number",
+      "required": false
+    },
+
+    {
+      "name": "NOI, CCY/sqm",
+      "type": "number",
+      "required": false,
+      "derived": true
+    },
+
+    {
+      "name": "WAULT, years",
+      "type": "number",
+      "required": false
+    },
+
+    {
+      "name": "Economic occupancy rate, %",
+      "type": "number",
+      "required": false
+    },
+
+    {
+      "name": "Yield",
+      "type": "number",
+      "required": false
+    },
+
+    {
+      "name": "Deal value, CCY",
+      "type": "number",
+      "required": false
+    },
+
+    {
+      "name": "Deal value, CCY/sqm",
+      "type": "number",
+      "required": false,
+      "derived": true
+    },
+
+    {
+      "name": "Comment",
+      "type": "string",
+      "required": true,
+      "notes": "1–2 factual sentences only"
+    },
+
+    {
+      "name": "Price, CCY",
+      "type": "number",
+      "required": false
+    },
+
+    {
+      "name": "Price, CCY/sqm",
+      "type": "number",
+      "required": false,
+      "derived": true
+    },
+
+    { "name": "Yield2", "type": "number", "required": false },
+    { "name": "Link", "type": "string", "required": false }
+  ]
+}
