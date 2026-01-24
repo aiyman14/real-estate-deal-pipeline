@@ -2,14 +2,15 @@ import argparse
 from pathlib import Path
 
 from src.pipelines.scaffold import scaffold_inbound_tsv, scaffold_transactions_tsv
-from src.pipelines.validate_file import validate_tsv   # ← NEW (Phase 2)
+from src.pipelines.validate_file import validate_tsv
+from src.pipelines.normalize_file import normalize_tsv   # ← NEW (Phase 3)
 
 
 def main() -> None:
     print("CLI MAIN RUNNING")
 
     parser = argparse.ArgumentParser(
-        description="Real estate deal pipeline (scaffold + validation phase)"
+        description="Real estate deal pipeline (scaffold + validation + normalization phase)"
     )
     sub = parser.add_subparsers(dest="command", required=True)
 
@@ -34,6 +35,21 @@ def main() -> None:
     p_val.add_argument("--schema", required=True, help="Path to schema JSON")
     p_val.add_argument("--tsv", required=True, help="Path to TSV file")
 
+    # ---------- Normalization commands (Phase 3) ----------
+    p_nin = sub.add_parser(
+        "normalize-inbound",
+        help="Normalize inbound TSV (Use -> canonical)"
+    )
+    p_nin.add_argument("--tsv", required=True, help="Path to inbound TSV")
+    p_nin.add_argument("--out", default="output/inbound_rows.normalized.tsv")
+
+    p_ntx = sub.add_parser(
+        "normalize-transactions",
+        help="Normalize transactions TSV (Property type -> canonical)"
+    )
+    p_ntx.add_argument("--tsv", required=True, help="Path to transactions TSV")
+    p_ntx.add_argument("--out", default="output/transaction_rows.normalized.tsv")
+
     args = parser.parse_args()
 
     # ---------- Command dispatch ----------
@@ -51,6 +67,26 @@ def main() -> None:
             print("INVALID ❌")
             for e in errors:
                 print(f"  - {e}")
+
+    elif args.command == "normalize-inbound":
+        ok, msg = normalize_tsv(
+            "config/schemas/inbound_purple.schema.json",
+            Path(args.tsv),
+            Path(args.out),
+            mode="inbound",
+        )
+        print("OK ✅" if ok else "FAILED ❌")
+        print(msg)
+
+    elif args.command == "normalize-transactions":
+        ok, msg = normalize_tsv(
+            "config/schemas/transactions.schema.json",
+            Path(args.tsv),
+            Path(args.out),
+            mode="transactions",
+        )
+        print("OK ✅" if ok else "FAILED ❌")
+        print(msg)
 
 
 if __name__ == "__main__":
