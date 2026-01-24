@@ -4,14 +4,16 @@ from src.normalize.property_type import normalize_property_type
 
 
 def normalize_inbound_row(row: Dict[str, Any], property_map: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str, Any]]:
-    """
-    Returns (normalized_row, meta)
-    meta contains helpful info for review (confidence, matches).
-    """
     out = dict(row)
     meta: Dict[str, Any] = {}
 
-    # Inbound: normalize "Use" if present
+    # Inbound files often use "Type" (your TSV shows this)
+    if "Type" in out:
+        canon, conf = normalize_property_type(out.get("Type", ""), property_map)
+        meta["Type_confidence"] = conf
+        out["Type"] = canon
+
+    # Keep this too, in case later inbound schema uses "Use"
     if "Use" in out:
         canon, conf = normalize_property_type(out.get("Use", ""), property_map)
         meta["Use_confidence"] = conf
