@@ -1,0 +1,140 @@
+{
+  "schema_name": "transactions",
+  "description": "Completed transactions extracted from news articles (Sweden/Denmark/Finland sheets)",
+  "core_required_fields": [
+    "Country",
+    "Date",
+    "Buyer",
+    "Seller",
+    "Location",
+    "Property type",
+    "Comments",
+    "Source URL"
+  ],
+  "columns": [
+    {
+      "name": "Country",
+      "type": "enum",
+      "required": true,
+      "allowed_values": ["Sweden", "Denmark", "Finland"]
+    },
+    {
+      "name": "Date",
+      "type": "date",
+      "required": true,
+      "format": "yyyy/mm/dd"
+    },
+    {
+      "name": "Buyer",
+      "type": "string",
+      "required": true,
+      "policy": "explicit_only"
+    },
+    {
+      "name": "Seller",
+      "type": "string",
+      "required": true,
+      "policy": "explicit_only"
+    },
+    {
+      "name": "Location",
+      "type": "string",
+      "required": true,
+      "notes": "City-level only"
+    },
+
+    {
+      "name": "Property type",
+      "type": "enum",
+      "required": true,
+      "policy": "suggest_ok",
+      "notes": "Normalize using property_type_map.yml"
+    },
+
+    {
+      "name": "Area, m2",
+      "type": "number",
+      "required": false,
+      "policy": "explicit_only"
+    },
+
+    {
+      "name": "Price, SEK",
+      "type": "number",
+      "required": false,
+      "country": "Sweden",
+      "policy": "explicit_only"
+    },
+    {
+      "name": "Price, DKK",
+      "type": "number",
+      "required": false,
+      "country": "Denmark",
+      "policy": "explicit_only"
+    },
+    {
+      "name": "Price, EUR",
+      "type": "number",
+      "required": false,
+      "country": "Finland",
+      "policy": "explicit_only"
+    },
+
+    {
+      "name": "Price, CCY/m2",
+      "type": "number",
+      "required": false,
+      "derived": true,
+      "policy": "derived_ok",
+      "notes": "Derived only if price and area are explicitly present"
+    },
+
+    {
+      "name": "Yield",
+      "type": "number",
+      "required": false,
+      "policy": "explicit_only"
+    },
+
+    {
+      "name": "Broker",
+      "type": "string",
+      "required": false,
+      "policy": "explicit_only"
+    },
+
+    {
+      "name": "Project name",
+      "type": "string",
+      "required": false
+    },
+
+    {
+      "name": "Comments",
+      "type": "string",
+      "required": true,
+      "notes": "1–2 factual sentences; no marketing language"
+    },
+
+    {
+      "name": "Source URL",
+      "type": "string",
+      "required": true,
+      "notes": "Original article URL (or pasted-text identifier)"
+    },
+
+    {
+      "name": "Source (raw)",
+      "type": "string",
+      "required": false,
+      "notes": "Optional: store original source field name/content from sheet (e.g., 'Souce' in Sweden export)"
+    },
+
+    {
+      "name": "Tags / Notes",
+      "type": "string",
+      "required": false,
+      "notes": "Optional scratch field for internal logging (not for Excel paste)"
+    }
+  ]
+}
