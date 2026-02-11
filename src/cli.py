@@ -85,6 +85,29 @@ def main() -> None:
     p_proc_in.add_argument("--out", default=None, help="Output TSV path (optional)")
     p_proc_in.add_argument("--date", default="", help="Date received (yyyy/mm/dd)")
 
+    # ---------- URL and direct PDF commands ----------
+    p_url = sub.add_parser(
+        "process-url",
+        help="Fetch article from URL and process (requires ANTHROPIC_API_KEY)"
+    )
+    p_url.add_argument("--url", required=True, help="URL of the article")
+    p_url.add_argument("--out", default=None, help="Output TSV/Excel path (optional)")
+
+    p_pdf_direct = sub.add_parser(
+        "process-pdf-file",
+        help="Process PDF file directly (requires ANTHROPIC_API_KEY)"
+    )
+    p_pdf_direct.add_argument("--input", required=True, help="Path to PDF file")
+    p_pdf_direct.add_argument("--out", default=None, help="Output TSV/Excel path (optional)")
+    p_pdf_direct.add_argument("--date", default="", help="Date received (yyyy/mm/dd)")
+
+    p_extract_pdf = sub.add_parser(
+        "extract-pdf-text",
+        help="Extract text from PDF file (no LLM, just text extraction)"
+    )
+    p_extract_pdf.add_argument("--input", required=True, help="Path to PDF file")
+    p_extract_pdf.add_argument("--out", default=None, help="Output text file path")
+
     args = parser.parse_args()
 
     # ---------- Command dispatch ----------
@@ -185,6 +208,57 @@ def main() -> None:
             print("READY TO PASTE ✅")
             print("-" * 40)
             print(tsv)
+        else:
+            print("FAILED ❌")
+            print(msg)
+
+    elif args.command == "process-url":
+        from src.pipelines.full_pipeline import process_article_url
+
+        out_path = Path(args.out) if args.out else None
+        print(f"Fetching article from: {args.url}")
+        ok, msg, tsv = process_article_url(
+            args.url,
+            out_path,
+        )
+        if ok:
+            print("READY TO PASTE ✅")
+            print("-" * 40)
+            print(tsv)
+        else:
+            print("FAILED ❌")
+            print(msg)
+
+    elif args.command == "process-pdf-file":
+        from src.pipelines.full_pipeline import process_pdf_direct
+
+        out_path = Path(args.out) if args.out else None
+        print(f"Reading PDF: {args.input}")
+        ok, msg, tsv = process_pdf_direct(
+            Path(args.input),
+            out_path,
+            args.date,
+        )
+        if ok:
+            print("READY TO PASTE ✅")
+            print("-" * 40)
+            print(tsv)
+        else:
+            print("FAILED ❌")
+            print(msg)
+
+    elif args.command == "extract-pdf-text":
+        from src.fetch.pdf_reader import extract_text_from_pdf
+
+        ok, msg, text = extract_text_from_pdf(Path(args.input))
+        if ok:
+            print(f"EXTRACTED ✅ ({msg})")
+            print("-" * 40)
+            if args.out:
+                Path(args.out).write_text(text, encoding="utf-8")
+                print(f"Saved to: {args.out}")
+            else:
+                print(text)
         else:
             print("FAILED ❌")
             print(msg)
