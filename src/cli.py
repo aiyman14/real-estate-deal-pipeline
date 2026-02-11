@@ -68,6 +68,23 @@ def main() -> None:
     p_exi.add_argument("--out", default=None, help="Output JSON path (optional)")
     p_exi.add_argument("--date", default="", help="Date received (yyyy/mm/dd)")
 
+    # ---------- Full pipeline commands (Phase 5) ----------
+    p_proc_tx = sub.add_parser(
+        "process-article",
+        help="Full pipeline: article -> paste-ready TSV (requires ANTHROPIC_API_KEY)"
+    )
+    p_proc_tx.add_argument("--input", required=True, help="Path to article text file")
+    p_proc_tx.add_argument("--out", default=None, help="Output TSV path (optional)")
+    p_proc_tx.add_argument("--url", default="", help="Source URL")
+
+    p_proc_in = sub.add_parser(
+        "process-pdf",
+        help="Full pipeline: PDF text -> paste-ready TSV (requires ANTHROPIC_API_KEY)"
+    )
+    p_proc_in.add_argument("--input", required=True, help="Path to PDF text file")
+    p_proc_in.add_argument("--out", default=None, help="Output TSV path (optional)")
+    p_proc_in.add_argument("--date", default="", help="Date received (yyyy/mm/dd)")
+
     args = parser.parse_args()
 
     # ---------- Command dispatch ----------
@@ -134,6 +151,40 @@ def main() -> None:
         if ok:
             print("EXTRACTED ✅")
             print(json.dumps(result["row"], indent=2, ensure_ascii=False))
+        else:
+            print("FAILED ❌")
+            print(msg)
+
+    elif args.command == "process-article":
+        from src.pipelines.full_pipeline import process_article_file
+
+        out_path = Path(args.out) if args.out else None
+        ok, msg, tsv = process_article_file(
+            Path(args.input),
+            out_path,
+            args.url,
+        )
+        if ok:
+            print("READY TO PASTE ✅")
+            print("-" * 40)
+            print(tsv)
+        else:
+            print("FAILED ❌")
+            print(msg)
+
+    elif args.command == "process-pdf":
+        from src.pipelines.full_pipeline import process_pdf_file
+
+        out_path = Path(args.out) if args.out else None
+        ok, msg, tsv = process_pdf_file(
+            Path(args.input),
+            out_path,
+            args.date,
+        )
+        if ok:
+            print("READY TO PASTE ✅")
+            print("-" * 40)
+            print(tsv)
         else:
             print("FAILED ❌")
             print(msg)
