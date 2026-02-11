@@ -1,16 +1,17 @@
 import argparse
+import json
 from pathlib import Path
 
 from src.pipelines.scaffold import scaffold_inbound_tsv, scaffold_transactions_tsv
 from src.pipelines.validate_file import validate_tsv
-from src.pipelines.normalize_file import normalize_tsv   # ← NEW (Phase 3)
+from src.pipelines.normalize_file import normalize_tsv
 
 
 def main() -> None:
     print("CLI MAIN RUNNING")
 
     parser = argparse.ArgumentParser(
-        description="Real estate deal pipeline (scaffold + validation + normalization phase)"
+        description="Real estate deal pipeline (scaffold + validation + normalization + extraction)"
     )
     sub = parser.add_subparsers(dest="command", required=True)
 
@@ -50,6 +51,23 @@ def main() -> None:
     p_ntx.add_argument("--tsv", required=True, help="Path to transactions TSV")
     p_ntx.add_argument("--out", default="output/transaction_rows.normalized.tsv")
 
+    # ---------- Extraction commands (Phase 4) ----------
+    p_ext = sub.add_parser(
+        "extract-transaction",
+        help="Extract transaction from article text file (requires ANTHROPIC_API_KEY)"
+    )
+    p_ext.add_argument("--input", required=True, help="Path to text file with article")
+    p_ext.add_argument("--out", default=None, help="Output JSON path (optional)")
+    p_ext.add_argument("--url", default="", help="Source URL of the article")
+
+    p_exi = sub.add_parser(
+        "extract-inbound",
+        help="Extract inbound deal from PDF text file (requires ANTHROPIC_API_KEY)"
+    )
+    p_exi.add_argument("--input", required=True, help="Path to text file with PDF content")
+    p_exi.add_argument("--out", default=None, help="Output JSON path (optional)")
+    p_exi.add_argument("--date", default="", help="Date received (yyyy/mm/dd)")
+
     args = parser.parse_args()
 
     # ---------- Command dispatch ----------
@@ -87,6 +105,38 @@ def main() -> None:
         )
         print("OK ✅" if ok else "FAILED ❌")
         print(msg)
+
+    elif args.command == "extract-transaction":
+        from src.pipelines.extract_pipeline import process_transaction_file
+
+        out_path = Path(args.out) if args.out else None
+        ok, msg, result = process_transaction_file(
+            Path(args.input),
+            out_path,
+            args.url,
+        )
+        if ok:
+            print("EXTRACTED ✅")
+            print(json.dumps(result["row"], indent=2, ensure_ascii=False))
+        else:
+            print("FAILED ❌")
+            print(msg)
+
+    elif args.command == "extract-inbound":
+        from src.pipelines.extract_pipeline import process_inbound_file
+
+        out_path = Path(args.out) if args.out else None
+        ok, msg, result = process_inbound_file(
+            Path(args.input),
+            out_path,
+            args.date,
+        )
+        if ok:
+            print("EXTRACTED ✅")
+            print(json.dumps(result["row"], indent=2, ensure_ascii=False))
+        else:
+            print("FAILED ❌")
+            print(msg)
 
 
 if __name__ == "__main__":
