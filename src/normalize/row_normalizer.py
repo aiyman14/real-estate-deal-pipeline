@@ -12,6 +12,7 @@ from typing import Any, Dict, Tuple
 from src.normalize.property_type import normalize_property_type
 from src.normalize.date_normalizer import normalize_date
 from src.normalize.number_normalizer import normalize_number, normalize_price, normalize_area, normalize_yield
+from src.normalize.country_normalizer import normalize_country
 
 
 # Field definitions for each schema type
@@ -69,6 +70,13 @@ def normalize_inbound_row(row: Dict[str, Any], property_map: Dict[str, Any]) -> 
             meta[f"{field}_confidence"] = conf
             out[field] = canon
 
+    # Country field
+    if "Country" in out and out["Country"]:
+        canon, conf = normalize_country(out["Country"])
+        if canon:
+            out["Country"] = canon
+        meta["Country_confidence"] = conf
+
     # Number fields (prices, areas, etc.)
     for field in INBOUND_NUMBER_FIELDS:
         if field in out and out[field]:
@@ -112,6 +120,13 @@ def normalize_transactions_row(row: Dict[str, Any], property_map: Dict[str, Any]
             canon, conf = normalize_property_type(out[field], property_map)
             meta[f"{field}_confidence"] = conf
             out[field] = canon
+
+    # Country field
+    if "Country" in out and out["Country"]:
+        canon, conf = normalize_country(out["Country"])
+        if canon:
+            out["Country"] = canon
+        meta["Country_confidence"] = conf
 
     # Number fields (prices, areas)
     for field in TRANSACTIONS_NUMBER_FIELDS:
