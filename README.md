@@ -6,7 +6,7 @@ A tool that extracts deal information from real estate news articles and broker 
 
 ---
 
-# Complete Setup Guide for Windows
+# Complete Setup Guide for Viktors monkey brain
 
 This guide will walk you through every step to get this program running on your Windows computer. Follow each step carefully.
 
