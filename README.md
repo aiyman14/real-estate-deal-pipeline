@@ -51,6 +51,8 @@ You should see something like `Python 3.12.4`. If you see this, Python is instal
 
 This tool uses Claude AI to read and understand the documents. You need an API key to use it.
 
+**Already have an API key?** Skip to [Step 3](#step-3-download-this-program).
+
 ### 2.1 Create an Anthropic Account
 
 1. Go to: **https://console.anthropic.com/**
@@ -81,7 +83,7 @@ This tool uses Claude AI to read and understand the documents. You need an API k
 6. Choose a location you'll remember, like your Desktop or Documents folder
 7. Click **"Extract"**
 
-You now have a folder called `real-estate-deal-pipeline-main` (or similar).
+You now have a folder called `nordics-real-estate-automation-main` (or similar).
 
 ### Option B: Using Git (Advanced)
 
@@ -89,14 +91,14 @@ If you have Git installed, open Command Prompt and run:
 
 ```
 cd %USERPROFILE%\Documents
-git clone https://github.com/YOUR-USERNAME/real-estate-deal-pipeline.git
+git clone https://github.com/YOUR-USERNAME/nordics-real-estate-automation.git
 ```
 
 ---
 
 ## Step 4: Open Command Prompt in the Program Folder
 
-1. Open the folder where you extracted the program (for example: `Documents\real-estate-deal-pipeline-main`)
+1. Open the folder where you extracted the program (for example: `Documents\nordics-real-estate-automation-main`)
 2. Click in the address bar at the top of the File Explorer window (where it shows the folder path)
 3. Type **cmd** and press Enter
 
@@ -108,7 +110,7 @@ This opens Command Prompt directly in the program folder.
 3. Type the following (adjust the path to match where you saved the folder):
 
 ```
-cd %USERPROFILE%\Documents\real-estate-deal-pipeline-main
+cd %USERPROFILE%\Documents\nordics-real-estate-automation-main
 ```
 
 ---
@@ -241,7 +243,7 @@ After running any command, your Excel file is saved in the `output` folder insid
 
 **To open your output:**
 1. Open File Explorer
-2. Navigate to the program folder (e.g., `Documents\real-estate-deal-pipeline-main`)
+2. Navigate to the program folder (e.g., `Documents\nordics-real-estate-automation-main`)
 3. Open the `output` folder
 4. Double-click your Excel file to open it
 
@@ -259,7 +261,7 @@ After running any command, your Excel file is saved in the `output` folder insid
 
 **Solution:** You're not in the right folder. Make sure you're in the program folder:
 ```
-cd %USERPROFILE%\Documents\real-estate-deal-pipeline-main
+cd %USERPROFILE%\Documents\nordics-real-estate-automation-main
 ```
 
 ### "ANTHROPIC_API_KEY not set" or "API key not found"
