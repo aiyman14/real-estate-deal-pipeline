@@ -35,29 +35,33 @@ SAMPLE_INBOUND_EXPECTED = {
 }
 
 # Sample transactions row - before normalization
+# Note: Price is now extracted in millions (e.g., 150 = 150 million)
+# The renderer routes it to the correct country-specific column
 SAMPLE_TRANSACTIONS_RAW = {
+    "Country": "Sweden",
     "Date": "2024-01-15",
     "Buyer": "Buyer Corp",
     "Seller": "Seller AB",
     "Location": "Gothenburg",
     "Property type": "lager",
     "Area, m2": "25,000",
-    "Price, SEK": "150 MSEK",
+    "Price": 150,  # Price in millions (LLM extracts as number)
     "Yield": "5.25%",
     "Comments": "Industrial warehouse acquisition",
-    "Source URL": "https://example.com/article",
+    "Source": "https://example.com/article",
 }
 
 # Expected output after normalization
 SAMPLE_TRANSACTIONS_EXPECTED = {
+    "Country": "Sweden",
     "Date": "2024/01/15",
     "Buyer": "Buyer Corp",
     "Seller": "Seller AB",
     "Location": "Gothenburg",
     "Property type": "Logistics",
     "Area, m2": 25000,
-    "Price, SEK": 150000000,
+    "Price": 150,  # Price stays in millions
     "Yield": 5.25,
     "Comments": "Industrial warehouse acquisition",
-    "Source URL": "https://example.com/article",
+    "Source": "https://example.com/article",
 }

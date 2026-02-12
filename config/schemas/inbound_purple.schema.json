@@ -1,137 +1,56 @@
 {
   "schema_name": "inbound_purple",
-  "description": "Inbound deals extracted from IMs and teasers (purple sheets)",
+  "description": "Inbound deals extracted from IMs and teasers (purple Deal list sheet)",
+  "notes": "Column order must match Excel exactly for copy-paste",
   "columns": [
-    { "name": "Index", "type": "integer", "required": false },
-    { "name": "Week nr.", "type": "integer", "required": false },
-
-    {
-      "name": "Date received",
-      "type": "date",
-      "required": true,
-      "format": "yyyy/mm/dd"
-    },
-
-    { "name": "Type", "type": "string", "required": false },
-
-    {
-      "name": "Project Name",
-      "type": "string",
-      "required": true
-    },
-
-    { "name": "Received by", "type": "string", "required": false },
+    { "name": "Index", "type": "integer", "required": false, "notes": "Row number, auto-generated" },
+    { "name": "Week nr.", "type": "integer", "required": false, "derived": true, "notes": "Calculated from Date received" },
+    { "name": "Date received", "type": "date", "format": "yyyy/mm/dd", "required": true },
+    { "name": "Type", "type": "string", "required": false, "notes": "IM or Teaser" },
+    { "name": "Project Name", "type": "string", "required": true, "notes": "Usually the document name or first slide title" },
+    { "name": "Received by", "type": "string", "required": false, "notes": "Person who received the deal - leave empty for automation" },
     { "name": "Seller", "type": "string", "required": false },
     { "name": "Broker", "type": "string", "required": false },
-
-    {
-      "name": "Country",
-      "type": "enum",
-      "required": true,
-      "allowed_values": ["Sweden", "Denmark", "Finland"]
-    },
-
-    {
-      "name": "Location",
-      "type": "string",
-      "required": true,
-      "notes": "City-level only"
-    },
-
-    {
-      "name": "Portfolio",
-      "type": "boolean",
-      "required": false
-    },
-
+    { "name": "Country", "type": "enum", "required": true, "allowed_values": ["Sweden", "Denmark", "Finland"] },
+    { "name": "Location", "type": "string", "required": true, "notes": "City/municipality name" },
+    { "name": "Portfolio", "type": "string", "required": false, "notes": "Yes or No" },
     { "name": "Address", "type": "string", "required": false },
     { "name": "Postal code", "type": "string", "required": false },
-    { "name": "Property designation", "type": "string", "required": false },
-
-    {
-      "name": "Use",
-      "type": "enum",
-      "required": true,
-      "notes": "Normalized via property_type_map.yml"
-    },
-
-    {
-      "name": "Leasable area, sqm",
-      "type": "number",
-      "required": false
-    },
-
-    {
-      "name": "Base rent incl. index, CCY/sqm",
-      "type": "number",
-      "required": false
-    },
-
-    {
-      "name": "NOI, CCY",
-      "type": "number",
-      "required": false
-    },
-
-    {
-      "name": "NOI, CCY/sqm",
-      "type": "number",
-      "required": false,
-      "derived": true
-    },
-
-    {
-      "name": "WAULT, years",
-      "type": "number",
-      "required": false
-    },
-
-    {
-      "name": "Economic occupancy rate, %",
-      "type": "number",
-      "required": false
-    },
-
-    {
-      "name": "Yield",
-      "type": "number",
-      "required": false
-    },
-
-    {
-      "name": "Deal value, CCY",
-      "type": "number",
-      "required": false
-    },
-
-    {
-      "name": "Deal value, CCY/sqm",
-      "type": "number",
-      "required": false,
-      "derived": true
-    },
-
-    {
-      "name": "Comment",
-      "type": "string",
-      "required": true,
-      "notes": "1–2 factual sentences only"
-    },
-
-    {
-      "name": "Price, CCY",
-      "type": "number",
-      "required": false
-    },
-
-    {
-      "name": "Price, CCY/sqm",
-      "type": "number",
-      "required": false,
-      "derived": true
-    },
-
+    { "name": "Property designation", "type": "string", "required": false, "notes": "Swedish: fastighetsbeteckning" },
+    { "name": "Use", "type": "string", "required": true, "notes": "Property type: Residential, Industrial, Office, etc." },
+    { "name": "Leasable area, sqm", "type": "number", "required": false },
+    { "name": "Base rent incl. index, CCY/sqm", "type": "number", "required": false },
+    { "name": "NOI, CCY", "type": "number", "required": false, "notes": "Net Operating Income, also called Driftnetto" },
+    { "name": "NOI, CCY/sqm", "type": "number", "required": false, "derived": true },
+    { "name": "WAULT, years", "type": "number", "required": false, "notes": "Weighted Average Unexpired Lease Term" },
+    { "name": "Economic occupancy rate, %", "type": "number", "required": false },
+    { "name": "Yield", "type": "number", "required": false },
+    { "name": "Deal value, CCY", "type": "number", "required": false, "notes": "Asking price or guide price" },
+    { "name": "Deal value, CCY/sqm", "type": "number", "required": false, "derived": true },
+    { "name": "Comment", "type": "string", "required": true, "notes": "1-2 sentence summary of the deal" },
+    { "name": "Price, CCY", "type": "number", "required": false, "notes": "Actual price if different from deal value" },
+    { "name": "Price, CCY/sqm", "type": "number", "required": false, "derived": true },
     { "name": "Yield2", "type": "number", "required": false },
     { "name": "Link", "type": "string", "required": false }
+  ],
+  "extraction_fields": [
+    "Project Name",
+    "Seller",
+    "Broker",
+    "Country",
+    "Location",
+    "Portfolio",
+    "Address",
+    "Postal code",
+    "Property designation",
+    "Use",
+    "Leasable area, sqm",
+    "Base rent incl. index, CCY/sqm",
+    "NOI, CCY",
+    "WAULT, years",
+    "Economic occupancy rate, %",
+    "Yield",
+    "Deal value, CCY",
+    "Comment"
   ]
 }

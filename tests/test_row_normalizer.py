@@ -106,11 +106,17 @@ class TestTransactionsRowNormalizer:
         result, meta = normalize_transactions_row(row, property_map)
         assert result["Property type"] == "Logistics"
 
-    def test_swedish_price_normalized(self, property_map):
-        """Test Swedish price format is normalized."""
-        row = {"Price, SEK": "150 MSEK"}
+    def test_price_field_passthrough(self, property_map):
+        """Test Price field (already a number) passes through."""
+        row = {"Price": 150}  # Price in millions, already a number
         result, meta = normalize_transactions_row(row, property_map)
-        assert result["Price, SEK"] == 150000000
+        assert result["Price"] == 150  # Stays as-is
+
+    def test_price_msek_string_normalized(self, property_map):
+        """Test Price, MSEK field with string is normalized."""
+        row = {"Price, MSEK": "150"}  # String number
+        result, meta = normalize_transactions_row(row, property_map)
+        assert result["Price, MSEK"] == 150  # Parsed to number
 
 
 class TestConfidenceMetadata:

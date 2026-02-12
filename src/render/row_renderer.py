@@ -3,7 +3,7 @@ Row renderer: converts normalized rows to paste-ready output.
 
 Handles:
 - Exact column ordering from schema
-- Country-specific price column routing
+- Country-specific column layouts for transactions
 - Derived field computation (price per m2)
 - Value formatting for Excel compatibility
 """
@@ -14,39 +14,56 @@ import json
 from pathlib import Path
 
 
-# Country -> Price column mapping for transactions
-COUNTRY_PRICE_COLUMNS = {
-    "Sweden": "Price, SEK",
-    "Denmark": "Price, DKK",
-    "Finland": "Price, EUR",
-}
+def get_transaction_columns(schema: Dict[str, Any], country: str) -> List[str]:
+    """Get the column names for a specific country's transaction sheet."""
+    key = f"columns_{country.lower()}"
+    if key in schema:
+        return [c["name"] for c in schema[key]]
+    # Fallback to Sweden if country not found
+    return [c["name"] for c in schema.get("columns_sweden", [])]
 
 
 def render_transaction_row(
     row: Dict[str, Any],
     schema: Dict[str, Any],
+    country: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
     Render a transaction row for Excel output.
 
-    - Routes generic "Price" to country-specific column
-    - Computes Price, CCY/m2 if price and area are present
+    - Uses country-specific column layout
+    - Computes Price/m2 if price and area are present
     - Returns dict with all schema columns (empty string for missing)
     """
     out = {}
-    columns = [c["name"] for c in schema["columns"]]
 
-    # Route price to correct country column
-    country = row.get("Country", "")
+    # Determine country for column layout
+    country = country or row.get("Country", "Sweden")
+    columns = get_transaction_columns(schema, country)
+
+    # Price is already in millions from LLM, keep as-is
     price = row.get("Price")
-    if price and country in COUNTRY_PRICE_COLUMNS:
-        price_col = COUNTRY_PRICE_COLUMNS[country]
-        row[price_col] = price
-
-    # Compute derived: Price, CCY/m2
     area = row.get("Area, m2")
+
+    # Route price to correct column based on country
+    if price is not None:
+        if country == "Sweden":
+            row["Price, MSEK"] = price
+        elif country == "Denmark":
+            row["Price, MDKK"] = price
+        elif country == "Finland":
+            row["Price, MEUR"] = price
+
+    # Compute derived: Price/m2
+    # Price is in millions, area in sqm, so: (price * 1_000_000) / area
     if price and area and isinstance(price, (int, float)) and isinstance(area, (int, float)) and area > 0:
-        row["Price, CCY/m2"] = round(price / area)
+        price_per_m2 = round((price * 1_000_000) / area)
+        if country == "Sweden":
+            row["Price, SEK/m2"] = price_per_m2
+        elif country == "Denmark":
+            row["Price, DKK/m2"] = price_per_m2
+        elif country == "Finland":
+            row["Price, EUR/m2"] = price_per_m2
 
     # Build output with all columns in order
     for col in columns:
@@ -64,10 +81,23 @@ def render_inbound_row(
     Render an inbound row for Excel output.
 
     - Computes derived fields (NOI/sqm, Deal value/sqm, Price/sqm)
+    - Computes Week nr. from Date received
     - Returns dict with all schema columns
     """
     out = {}
     columns = [c["name"] for c in schema["columns"]]
+
+    # Map extraction field names to schema field names
+    field_mapping = {
+        "NOI": "NOI, CCY",
+        "Base rent": "Base rent incl. index, CCY/sqm",
+        "WAULT": "WAULT, years",
+        "Occupancy": "Economic occupancy rate, %",
+        "Deal value": "Deal value, CCY",
+    }
+    for old_key, new_key in field_mapping.items():
+        if old_key in row and new_key not in row:
+            row[new_key] = row[old_key]
 
     # Compute derived: NOI, CCY/sqm
     area = row.get("Leasable area, sqm")
@@ -128,6 +158,7 @@ def rows_to_tsv(
     rows: List[Dict[str, Any]],
     schema: Dict[str, Any],
     mode: str = "transactions",
+    country: Optional[str] = None,
 ) -> str:
     """
     Convert rows to TSV string ready for paste.
@@ -136,18 +167,27 @@ def rows_to_tsv(
         rows: List of normalized row dicts
         schema: Schema dict with columns
         mode: "transactions" or "inbound"
+        country: For transactions, which country's column layout to use
 
     Returns:
         TSV string with header row
     """
-    columns = [c["name"] for c in schema["columns"]]
+    if mode == "transactions":
+        # Use country from first row if not specified
+        if not country and rows:
+            country = rows[0].get("Country", "Sweden")
+        columns = get_transaction_columns(schema, country or "Sweden")
+    else:
+        columns = [c["name"] for c in schema["columns"]]
+
     lines = ["\t".join(columns)]
 
-    render_fn = render_transaction_row if mode == "transactions" else render_inbound_row
-
     for row in rows:
-        rendered = render_fn(row, schema)
-        line = "\t".join(rendered[col] for col in columns)
+        if mode == "transactions":
+            rendered = render_transaction_row(row, schema, country)
+        else:
+            rendered = render_inbound_row(row, schema)
+        line = "\t".join(rendered.get(col, "") for col in columns)
         lines.append(line)
 
     return "\n".join(lines)
@@ -158,17 +198,22 @@ def row_to_tsv_line(
     schema: Dict[str, Any],
     mode: str = "transactions",
     include_header: bool = False,
+    country: Optional[str] = None,
 ) -> str:
     """
     Convert a single row to TSV line(s).
 
     Useful for clipboard output of a single extracted row.
     """
-    columns = [c["name"] for c in schema["columns"]]
-    render_fn = render_transaction_row if mode == "transactions" else render_inbound_row
+    if mode == "transactions":
+        country = country or row.get("Country", "Sweden")
+        columns = get_transaction_columns(schema, country)
+        rendered = render_transaction_row(row, schema, country)
+    else:
+        columns = [c["name"] for c in schema["columns"]]
+        rendered = render_inbound_row(row, schema)
 
-    rendered = render_fn(row, schema)
-    data_line = "\t".join(rendered[col] for col in columns)
+    data_line = "\t".join(rendered.get(col, "") for col in columns)
 
     if include_header:
         header_line = "\t".join(columns)
@@ -182,8 +227,9 @@ def write_rendered_tsv(
     schema: Dict[str, Any],
     output_path: Path,
     mode: str = "transactions",
+    country: Optional[str] = None,
 ) -> None:
     """Write rendered rows to TSV file."""
-    tsv_content = rows_to_tsv(rows, schema, mode)
+    tsv_content = rows_to_tsv(rows, schema, mode, country)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(tsv_content + "\n", encoding="utf-8")

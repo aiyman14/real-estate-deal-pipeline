@@ -13,11 +13,30 @@ CRITICAL RULES:
 1. ONLY extract information that is EXPLICITLY stated in the text
 2. If a field is not clearly mentioned, return null - NEVER guess or infer
 3. Return valid JSON matching the exact schema provided
-4. For dates, extract as-is (normalization happens later)
-5. For prices/areas, extract ONLY the number with unit (e.g., "743 mkr", "47696 kvm") - no explanatory text
-6. For property type: Use "Mixed-use" if the article mentions multiple property types (office, retail, residential, industrial, etc.)
-7. For location: Use "Multiple" if properties are in several different cities
-8. Comments should be 1-2 factual sentences summarizing the deal - no marketing language
+4. For dates, extract as-is in yyyy/mm/dd format if possible
+5. For prices, extract ONLY the number - no currency symbols, no text. Example: "743" not "743 mkr"
+6. For areas, extract ONLY the number - no units. Example: "47696" not "47696 kvm"
+7. For property type: Use one of: Office, Residential, Logistics, Industrial, Retail, Hotel, Mixed-use, Land, Development, Building rights, Public use, Data center, Light industrial, Redevelopment, Other
+8. For property type 2: Only fill if there's a secondary distinct property type
+9. For location: Use city name, or "Multiple" if properties are in several different cities
+10. Comments should be 1-2 factual sentences summarizing the deal - no marketing language
+
+Property type dropdown values:
+- Office
+- Residential
+- Logistics
+- Industrial
+- Retail
+- Hotel
+- Mixed-use
+- Land
+- Development
+- Building rights
+- Public use
+- Data center
+- Light industrial
+- Redevelopment
+- Other
 
 You extract completed real estate transactions from news articles."""
 
@@ -25,18 +44,23 @@ TRANSACTIONS_USER_PROMPT = """Extract the transaction details from this article 
 
 Return a JSON object with these fields (use null if not explicitly stated):
 {{
-  "Country": "<Sweden|Denmark|Finland or local name>",
-  "Date": "<transaction date as written>",
-  "Buyer": "<full buyer company name - only if explicitly stated>",
-  "Seller": "<full seller company name - only if explicitly stated>",
+  "Country": "<Sweden|Denmark|Finland>",
+  "Date": "<transaction date in yyyy/mm/dd format>",
+  "Buyer": "<buyer company name - only if explicitly stated>",
+  "Seller": "<seller company name - only if explicitly stated>",
   "Location": "<city name, or 'Multiple' if properties in several cities>",
-  "Property type": "<property type, or 'Mixed-use' if multiple types mentioned (office+retail+residential etc.)>",
-  "Area, m2": "<area as number with unit only, e.g. '47696 kvm' - no descriptive text>",
-  "Price": "<primary price as number with currency, e.g. '743 mkr' or '150 MSEK' - not multiple values>",
-  "Yield": "<yield as number with % or 'procent', e.g. '7.2%' or '7,2 procent'>",
-  "Broker": "<broker/advisor name if stated>",
+  "Property type": "<from dropdown: Office, Residential, Logistics, Industrial, Retail, Hotel, Mixed-use, Land, Development, Building rights, Public use, Data center, Light industrial, Redevelopment, Other>",
+  "Property type 2": "<secondary property type if applicable, from same dropdown>",
+  "Main use (if Mixed use)": "<if property type is Mixed-use, list the uses e.g. 'Retail / Office / Residential'>",
+  "Use (if Development/Building rights)": "<if property type is Development or Building rights, what will be built>",
+  "Comment (if Redevelopment)": "<if property type is Redevelopment, describe what>",
+  "Comment (if Other)": "<if property type is Other, describe what>",
+  "Price": "<price as NUMBER ONLY in millions (e.g. 743, not 743000000 and not '743 mkr')>",
+  "Area, m2": "<area as NUMBER ONLY (e.g. 47696, not '47696 kvm')>",
+  "Yield": "<yield as decimal number if stated (e.g. 5.5 for 5.5%)>",
   "Project name": "<property/project name if stated>",
-  "Comments": "<1-2 sentence factual summary>"
+  "Broker": "<broker/advisor name if stated>",
+  "Comments": "<1-2 sentence factual overview of the deal and any important property information>"
 }}
 
 ARTICLE TEXT:
@@ -50,17 +74,19 @@ CRITICAL RULES:
 1. ONLY extract information that is EXPLICITLY stated in the document
 2. If a field is not clearly mentioned, return null - NEVER guess or infer
 3. Return valid JSON matching the exact schema provided
-4. For dates, extract as-is (normalization happens later)
-5. For prices/areas/NOI, extract as-is including units (normalization happens later)
-6. For property type/use, extract the description as-is (normalization happens later)
-7. Comments should be 2-3 factual sentences: property description + key metrics (area, rent, NOI, yield) if stated. No marketing language.
+4. For dates, extract in yyyy/mm/dd format
+5. For prices/areas/NOI, extract as NUMBER ONLY - no currency symbols, no units
+6. For property type/use, use standard categories: Residential, Industrial, Office, Retail, Logistics, Hotel, Mixed-use, Public use, Land, Development, Other
+7. Comments should be 2-3 factual sentences focusing on location details or notable facts about the deal - exclude financial metrics already captured in other fields
 8. For Type: Identify document type - "IM" for Investment Memorandum, "Teaser" for teaser/summary documents
-9. For Address: Extract specific street address (e.g., "Storgatan 12") - different from Location (city) and Property designation (cadastral reference)
-10. For NOI: Extract ONLY the total NOI amount as a single number. Do NOT combine with NOI per sqm.
-11. For Base rent: Look for "bashyra", "grundhyra", "base rent", "annual rent" - the contractual rent amount per sqm
-12. For Occupancy: Look for "uthyrningsgrad", "occupancy rate", "vacancy" (inverse) - express as percentage
-13. For Location: Use municipality/kommun level (administrative area), NOT smaller towns. Example: "Sigtuna" NOT "Märsta".
-14. For Broker: Extract brand/professional name, not full legal entity name. "Croisette" NOT "CCap Market AB (Croisette)".
+9. For Address: Extract specific street address (e.g., "Storgatan 12")
+10. For NOI: Extract ONLY the total NOI amount as a NUMBER. Also called "Driftnetto" in Swedish.
+11. For Base rent: Look for "bashyra", "grundhyra", "base rent" - extract as NUMBER per sqm
+12. For Occupancy: Look for "uthyrningsgrad", "occupancy rate" - express as decimal (e.g. 95 for 95%)
+13. For Location: Use municipality/kommun level (administrative area), NOT smaller towns
+14. For Broker: Extract brand name, not full legal entity. "Croisette" NOT "CCap Market AB (Croisette)"
+15. For Portfolio: "Yes" if multiple properties, "No" if single property
+16. Always give full numbers, no abbreviations (e.g. 3300000, not 3.3m)
 
 You extract deal information from broker PDFs, IMs, and teasers."""
 
@@ -68,25 +94,25 @@ INBOUND_USER_PROMPT = """Extract the deal details from this document text.
 
 Return a JSON object with these fields (use null if not explicitly stated):
 {{
-  "Type": "<'IM' if Investment Memorandum, 'Teaser' if teaser/summary document, null if unclear>",
-  "Project Name": "<document/property name - not a generic title like 'Investment Memorandum'>",
+  "Type": "<'IM' if Investment Memorandum, 'Teaser' if teaser/summary document>",
+  "Project Name": "<document/property name - usually appears on first slide or is document name, NOT generic title>",
   "Seller": "<seller name if stated>",
-  "Broker": "<broker/advisor brand name - if format is 'Company (Brand)' or 'Company - Brand', extract the brand (e.g., 'Croisette' not 'CCap Market AB')>",
-  "Country": "<Sweden|Denmark|Finland or local name>",
-  "Location": "<municipality/kommun name (NOT town/locality) - e.g., 'Sigtuna' not 'Märsta', 'Stockholm' not 'Södermalm'>",
-  "Portfolio": <true if multiple properties, false if single, null if unclear>,
-  "Address": "<street address with number, e.g. 'Storgatan 12' - NOT city name>",
+  "Broker": "<broker/advisor brand name>",
+  "Country": "<Sweden|Denmark|Finland>",
+  "Location": "<municipality/kommun name>",
+  "Portfolio": "<'Yes' if multiple properties, 'No' if single property>",
+  "Address": "<street address with number>",
   "Postal code": "<postal code if stated>",
-  "Property designation": "<property designation/fastighetsbeteckning if stated>",
-  "Use": "<property type/use as described>",
-  "Leasable area, sqm": "<area with units as written>",
-  "Base rent": "<base rent/grundhyra/bashyra per sqm as written - look for 'hyra', 'bashyra', 'grundhyra' followed by kr/sqm or SEK/m²>",
-  "NOI": "<total NOI/driftnetto as single number with currency - NOT per sqm>",
-  "WAULT": "<WAULT in years as written>",
-  "Occupancy": "<occupancy rate / uthyrningsgrad as percentage>",
-  "Yield": "<yield percentage if stated>",
-  "Deal value": "<asking price/deal value with currency as written>",
-  "Comments": "<2-3 factual sentences: property description + key metrics (area, rent, NOI, yield) if available>"
+  "Property designation": "<property designation/fastighetsbeteckning - the cadastral reference>",
+  "Use": "<property type: Residential, Industrial, Office, Retail, Logistics, Hotel, Mixed-use, Public use, Land, Development, Other>",
+  "Leasable area, sqm": "<area as NUMBER ONLY>",
+  "Base rent": "<base rent per sqm as NUMBER ONLY>",
+  "NOI": "<total NOI/driftnetto as NUMBER ONLY - full number not abbreviated>",
+  "WAULT": "<WAULT in years as NUMBER (e.g. 4.3)>",
+  "Occupancy": "<occupancy percentage as NUMBER (e.g. 95 for 95%)>",
+  "Yield": "<yield percentage as NUMBER (e.g. 5.5 for 5.5%)>",
+  "Deal value": "<asking price/deal value as NUMBER ONLY - full number>",
+  "Comments": "<2-3 factual sentences: property/location description + notable facts about deal, excluding financial metrics already captured>"
 }}
 
 DOCUMENT TEXT:

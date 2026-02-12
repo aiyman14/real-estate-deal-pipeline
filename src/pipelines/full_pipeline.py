@@ -12,7 +12,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from src.extract.extractor import Extractor, ExtractionError
 from src.normalize.row_normalizer import normalize_transactions_row, normalize_inbound_row
 from src.normalize.load_mappings import load_property_map
-from src.render.row_renderer import row_to_tsv_line, render_transaction_row, render_inbound_row
+from src.render.row_renderer import row_to_tsv_line, render_transaction_row, render_inbound_row, get_transaction_columns
 from src.render.excel_writer import write_excel
 from src.validate.schema_loader import load_schema
 from src.fetch.url_fetcher import fetch_article_from_url
@@ -123,7 +123,6 @@ def process_article_file(
         extractor = Extractor(api_key=api_key)
         property_map = load_property_map()
         schema = load_schema("config/schemas/transactions.schema.json")
-        columns = [c["name"] for c in schema["columns"]]
 
         # Extract
         raw_row, extract_meta = extractor.extract_transaction(article_text, source_url)
@@ -131,11 +130,15 @@ def process_article_file(
         # Normalize
         normalized_row, norm_meta = normalize_transactions_row(raw_row, property_map)
 
+        # Get country-specific columns
+        country = normalized_row.get("Country", "Sweden")
+        columns = get_transaction_columns(schema, country)
+
         # Render
-        rendered_row = render_transaction_row(normalized_row, schema)
+        rendered_row = render_transaction_row(normalized_row, schema, country)
 
         # Generate TSV for display
-        tsv = row_to_tsv_line(normalized_row, schema, mode="transactions", include_header=True)
+        tsv = row_to_tsv_line(normalized_row, schema, mode="transactions", include_header=True, country=country)
 
         # Write output file
         if output_path:
@@ -230,7 +233,6 @@ def process_article_url(
         extractor = Extractor(api_key=api_key)
         property_map = load_property_map()
         schema = load_schema("config/schemas/transactions.schema.json")
-        columns = [c["name"] for c in schema["columns"]]
 
         # Extract (use the URL as source)
         raw_row, extract_meta = extractor.extract_transaction(article_text, url)
@@ -238,11 +240,15 @@ def process_article_url(
         # Normalize
         normalized_row, norm_meta = normalize_transactions_row(raw_row, property_map)
 
+        # Get country-specific columns
+        country = normalized_row.get("Country", "Sweden")
+        columns = get_transaction_columns(schema, country)
+
         # Render
-        rendered_row = render_transaction_row(normalized_row, schema)
+        rendered_row = render_transaction_row(normalized_row, schema, country)
 
         # Generate TSV for display
-        tsv = row_to_tsv_line(normalized_row, schema, mode="transactions", include_header=True)
+        tsv = row_to_tsv_line(normalized_row, schema, mode="transactions", include_header=True, country=country)
 
         # Write output file
         if output_path:

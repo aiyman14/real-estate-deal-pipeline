@@ -38,13 +38,16 @@ INBOUND_PROPERTY_TYPE_FIELDS = ["Use"]
 TRANSACTIONS_DATE_FIELDS = ["Date"]
 TRANSACTIONS_NUMBER_FIELDS = [
     "Area, m2",
-    "Price, SEK",
-    "Price, DKK",
-    "Price, EUR",
-    "Price, CCY/m2",
+    "Price",  # Raw price in millions from LLM
+    "Price, MSEK",
+    "Price, MDKK",
+    "Price, MEUR",
+    "Price, SEK/m2",
+    "Price, DKK/m2",
+    "Price, EUR/m2",
 ]
 TRANSACTIONS_YIELD_FIELDS = ["Yield"]
-TRANSACTIONS_PROPERTY_TYPE_FIELDS = ["Property type"]
+TRANSACTIONS_PROPERTY_TYPE_FIELDS = ["Property type", "Property type 2"]
 
 
 def normalize_inbound_row(row: Dict[str, Any], property_map: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str, Any]]:

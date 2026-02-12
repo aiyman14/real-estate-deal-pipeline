@@ -1,140 +1,110 @@
 {
   "schema_name": "transactions",
   "description": "Completed transactions extracted from news articles (Sweden/Denmark/Finland sheets)",
-  "core_required_fields": [
+  "notes": "Column order must match Excel exactly for copy-paste. Different countries have slightly different columns.",
+  "columns_sweden": [
+    { "name": "Country", "type": "enum", "allowed_values": ["Sweden", "Denmark", "Finland"] },
+    { "name": "Date", "type": "date", "format": "yyyy/mm/dd" },
+    { "name": "Buyer", "type": "string" },
+    { "name": "Seller", "type": "string" },
+    { "name": "Location", "type": "string", "notes": "City name, or 'Multiple' for portfolio deals" },
+    { "name": "Property type", "type": "string", "notes": "Use dropdown values: Office, Residential, Logistics, etc." },
+    { "name": "Property type 2", "type": "string", "notes": "Secondary property type if applicable" },
+    { "name": "Main use (if Mixed use)", "type": "string" },
+    { "name": "Use (if Development/Building rights)", "type": "string" },
+    { "name": "Comment (if Redevelopment)", "type": "string" },
+    { "name": "Comment (if Other)", "type": "string" },
+    { "name": "Price, MSEK", "type": "number", "notes": "Price in millions SEK (e.g., 743 not 743000000)" },
+    { "name": "Area, m2", "type": "number" },
+    { "name": "Price, SEK/m2", "type": "number", "derived": true },
+    { "name": "Comments", "type": "string", "notes": "1-2 sentence overview" },
+    { "name": "Comments from Friday meeting", "type": "string", "required": false },
+    { "name": "Yield", "type": "number" },
+    { "name": "Project name", "type": "string" },
+    { "name": "Broker", "type": "string" },
+    { "name": "BRE received", "type": "string", "required": false },
+    { "name": "Received by", "type": "string", "required": false },
+    { "name": "BRE reviewed", "type": "string", "required": false },
+    { "name": "BRE bid", "type": "string", "required": false },
+    { "name": "Source", "type": "string", "notes": "Article title or URL" }
+  ],
+  "columns_denmark": [
+    { "name": "Country", "type": "enum", "allowed_values": ["Sweden", "Denmark", "Finland"] },
+    { "name": "Date", "type": "date", "format": "yyyy/mm/dd" },
+    { "name": "Buyer", "type": "string" },
+    { "name": "Seller", "type": "string" },
+    { "name": "Location", "type": "string" },
+    { "name": "Property type", "type": "string" },
+    { "name": "Property type 2", "type": "string" },
+    { "name": "Main use (if Mixed use)", "type": "string" },
+    { "name": "Use (if Development/Building rights)", "type": "string" },
+    { "name": "Comment (if Redevelopment)", "type": "string" },
+    { "name": "Comment (if Other)", "type": "string" },
+    { "name": "Price, MDKK", "type": "number", "notes": "Price in millions DKK" },
+    { "name": "Area, m2", "type": "number" },
+    { "name": "Price, DKK/m2", "type": "number", "derived": true },
+    { "name": "Comments", "type": "string" },
+    { "name": "Comments from meeting", "type": "string", "required": false },
+    { "name": "BRE received", "type": "string", "required": false },
+    { "name": "BRE reviewed", "type": "string", "required": false },
+    { "name": "BRE bid", "type": "string", "required": false },
+    { "name": "Broker", "type": "string" },
+    { "name": "Source", "type": "string" }
+  ],
+  "columns_finland": [
+    { "name": "Source", "type": "string" },
+    { "name": "Country", "type": "enum", "allowed_values": ["Sweden", "Denmark", "Finland"] },
+    { "name": "Date", "type": "date", "format": "yyyy/mm/dd" },
+    { "name": "Buyer", "type": "string" },
+    { "name": "Seller", "type": "string" },
+    { "name": "Location", "type": "string" },
+    { "name": "Property type", "type": "string" },
+    { "name": "Price, MEUR", "type": "number", "notes": "Price in millions EUR" },
+    { "name": "Area, m2", "type": "number" },
+    { "name": "Price, EUR/m2", "type": "number", "derived": true },
+    { "name": "Comments", "type": "string" },
+    { "name": "Yield", "type": "number" },
+    { "name": "Project name", "type": "string" },
+    { "name": "Broker", "type": "string" },
+    { "name": "BRE received", "type": "string", "required": false },
+    { "name": "BRE reviewed", "type": "string", "required": false },
+    { "name": "BRE bid", "type": "string", "required": false }
+  ],
+  "extraction_fields": [
     "Country",
     "Date",
     "Buyer",
     "Seller",
     "Location",
     "Property type",
+    "Property type 2",
+    "Main use (if Mixed use)",
+    "Use (if Development/Building rights)",
+    "Comment (if Redevelopment)",
+    "Comment (if Other)",
+    "Price",
+    "Area, m2",
+    "Yield",
+    "Project name",
+    "Broker",
     "Comments",
-    "Source URL"
+    "Source"
   ],
-  "columns": [
-    {
-      "name": "Country",
-      "type": "enum",
-      "required": true,
-      "allowed_values": ["Sweden", "Denmark", "Finland"]
-    },
-    {
-      "name": "Date",
-      "type": "date",
-      "required": true,
-      "format": "yyyy/mm/dd"
-    },
-    {
-      "name": "Buyer",
-      "type": "string",
-      "required": true,
-      "policy": "explicit_only"
-    },
-    {
-      "name": "Seller",
-      "type": "string",
-      "required": true,
-      "policy": "explicit_only"
-    },
-    {
-      "name": "Location",
-      "type": "string",
-      "required": true,
-      "notes": "City-level only"
-    },
-
-    {
-      "name": "Property type",
-      "type": "enum",
-      "required": true,
-      "policy": "suggest_ok",
-      "notes": "Normalize using property_type_map.yml"
-    },
-
-    {
-      "name": "Area, m2",
-      "type": "number",
-      "required": false,
-      "policy": "explicit_only"
-    },
-
-    {
-      "name": "Price, SEK",
-      "type": "number",
-      "required": false,
-      "country": "Sweden",
-      "policy": "explicit_only"
-    },
-    {
-      "name": "Price, DKK",
-      "type": "number",
-      "required": false,
-      "country": "Denmark",
-      "policy": "explicit_only"
-    },
-    {
-      "name": "Price, EUR",
-      "type": "number",
-      "required": false,
-      "country": "Finland",
-      "policy": "explicit_only"
-    },
-
-    {
-      "name": "Price, CCY/m2",
-      "type": "number",
-      "required": false,
-      "derived": true,
-      "policy": "derived_ok",
-      "notes": "Derived only if price and area are explicitly present"
-    },
-
-    {
-      "name": "Yield",
-      "type": "number",
-      "required": false,
-      "policy": "explicit_only"
-    },
-
-    {
-      "name": "Broker",
-      "type": "string",
-      "required": false,
-      "policy": "explicit_only"
-    },
-
-    {
-      "name": "Project name",
-      "type": "string",
-      "required": false
-    },
-
-    {
-      "name": "Comments",
-      "type": "string",
-      "required": true,
-      "notes": "1–2 factual sentences; no marketing language"
-    },
-
-    {
-      "name": "Source URL",
-      "type": "string",
-      "required": true,
-      "notes": "Original article URL (or pasted-text identifier)"
-    },
-
-    {
-      "name": "Source (raw)",
-      "type": "string",
-      "required": false,
-      "notes": "Optional: store original source field name/content from sheet (e.g., 'Souce' in Sweden export)"
-    },
-
-    {
-      "name": "Tags / Notes",
-      "type": "string",
-      "required": false,
-      "notes": "Optional scratch field for internal logging (not for Excel paste)"
-    }
+  "property_types": [
+    "Office",
+    "Residential",
+    "Logistics",
+    "Industrial",
+    "Retail",
+    "Hotel",
+    "Mixed-use",
+    "Land",
+    "Development",
+    "Building rights",
+    "Public use",
+    "Data center",
+    "Light industrial",
+    "Redevelopment",
+    "Other"
   ]
 }
