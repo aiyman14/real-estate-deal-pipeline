@@ -6,9 +6,36 @@ A tool that extracts deal information from real estate news articles and broker 
 
 ---
 
-# Complete Setup Guide for Viktors monkey brain
+# Complete Setup Guide for Viktor's monkey brain
 
 This guide will walk you through every step to get this program running on your Windows computer. Follow each step carefully.
+
+---
+
+## How This Tool Works (Overview)
+
+This tool handles **two separate processes** that match your Friday presentation workflow:
+
+### Process 1: Incoming Deals (PDFs)
+- **Input:** PDF documents from brokers (IMs, Teasers)
+- **Output:** Goes to the **"Deal list"** sheet
+- **Use case:** Tracking deals that are being marketed but haven't closed yet
+
+### Process 2: Completed Transactions (Articles)
+- **Input:** News articles about completed deals
+- **Output:** Goes to country-specific sheets: **"Sweden"**, **"Denmark"**, or **"Finland"**
+- **Use case:** Tracking transactions that have already happened
+
+**One file, four sheets:**
+```
+output/deals.xlsx
+├── Deal list   (Process 1 - all your PDFs go here)
+├── Sweden      (Process 2 - Swedish article deals)
+├── Denmark     (Process 2 - Danish article deals)
+└── Finland     (Process 2 - Finnish article deals)
+```
+
+**The magic:** Each time you run a command, the new deal is **added** to the correct sheet in the same file. Run it throughout the week, and by Friday everything is collected in one place!
 
 ---
 
@@ -155,75 +182,122 @@ set ANTHROPIC_API_KEY=sk-ant-api03-ABC123xyz456DEF789ghi012JKL345mno678PQR901stu
 
 ## Step 7: Run the Program
 
-Now you're ready to use the program! There are three ways to use it:
+Now you're ready to use the program! There are three main ways to use it:
 
 ---
 
-### Option 1: Process a News Article URL
+### Option 1: Process a News Article URL (Process 2 - Transactions)
 
 Use this to extract deal information from a real estate news article on the web.
 
-**Important:** This processes ONE article at a time. Run the command once for each article.
+**Important:**
+- This processes ONE article at a time
+- The deal will be automatically added to the correct country sheet (Sweden/Denmark/Finland)
+- Each run **adds** to the existing file (it doesn't overwrite previous deals)
 
 **Command format:**
 ```
-python -m src.cli process-url --url "PASTE-ARTICLE-URL-HERE" --out output/deal.xlsx
+python -m src.cli process-url --url "PASTE-ARTICLE-URL-HERE"
 ```
 
 **Example with a real URL:**
 ```
-python -m src.cli process-url --url "https://www.fastighetsvarlden.se/notiser/heimstaden-saljer-for-en-miljard/" --out output/my_deal.xlsx
+python -m src.cli process-url --url "https://www.fastighetsvarlden.se/notiser/heimstaden-saljer-for-en-miljard/"
 ```
 
 **What happens:**
-- The program reads the article
-- Extracts deal information (price, location, property type, etc.)
-- Saves it to an Excel file in the `output` folder
+1. The program reads the article
+2. Extracts deal information (buyer, seller, price, location, property type, etc.)
+3. Figures out which country it's for (Sweden, Denmark, or Finland)
+4. **Adds** it to the correct sheet in `output/deals.xlsx`
 
-**After it runs:** You'll see `Done. Output: output/my_deal.xlsx` when finished.
+**After it runs:** You'll see something like:
+```
+Done. Added to sheet 'Sweden' in output/deals.xlsx
+```
+
+**Processing multiple articles:** Just run the command again with a different URL. Each deal gets added to the same file!
+
+```
+python -m src.cli process-url --url "https://example.com/article1"
+python -m src.cli process-url --url "https://example.com/article2"
+python -m src.cli process-url --url "https://example.com/article3"
+```
+
+All three deals will be in `output/deals.xlsx`, each on the correct country sheet.
 
 ---
 
-### Option 2: Process a Single PDF
+### Option 2: Process a Single PDF (Process 1 - Incoming Deals)
 
 Use this to extract deal information from a PDF document (like a broker teaser or IM).
 
+**Important:**
+- PDFs go to the **"Deal list"** sheet (not the country sheets)
+- Each run **adds** to the existing file (it doesn't overwrite previous deals)
+
 **Command format:**
 ```
-python -m src.cli process-pdf-file --input "PATH-TO-YOUR-PDF" --out output/deal.xlsx
+python -m src.cli process-pdf-file --input "PATH-TO-YOUR-PDF"
 ```
 
 **Example (if your PDF is on the Desktop):**
 ```
-python -m src.cli process-pdf-file --input "%USERPROFILE%\Desktop\property_teaser.pdf" --out output/property_deal.xlsx
+python -m src.cli process-pdf-file --input "%USERPROFILE%\Desktop\property_teaser.pdf"
 ```
 
 **Example (if your PDF is in Documents):**
 ```
-python -m src.cli process-pdf-file --input "%USERPROFILE%\Documents\broker_im.pdf" --out output/broker_deal.xlsx
+python -m src.cli process-pdf-file --input "%USERPROFILE%\Documents\broker_im.pdf"
+```
+
+**What happens:**
+1. The program reads the PDF text
+2. Extracts deal information (property name, location, NOI, yield, area, etc.)
+3. **Adds** it to the "Deal list" sheet in `output/deals.xlsx`
+
+**After it runs:** You'll see:
+```
+Done. Added to sheet 'Deal list' in output/deals.xlsx
 ```
 
 **Tip:** You can drag and drop a PDF file into the Command Prompt window to paste its full path.
+
+**Optional: Set a "date received":**
+```
+python -m src.cli process-pdf-file --input "path\to\file.pdf" --date "2024/01/15"
+```
 
 ---
 
 ### Option 3: Process Multiple PDFs at Once (Batch)
 
-Use this to process all PDF files in a folder and combine them into one Excel file.
+Use this to process all PDF files in a folder at once.
 
 **Command format:**
 ```
-python -m src.cli process-pdf-folder --folder "PATH-TO-FOLDER" --out output/all_deals.xlsx
+python -m src.cli process-pdf-folder --folder "PATH-TO-FOLDER"
 ```
 
 **Example (if your PDFs are in a folder called "PDFs" on your Desktop):**
 ```
-python -m src.cli process-pdf-folder --folder "%USERPROFILE%\Desktop\PDFs" --out output/all_deals.xlsx
+python -m src.cli process-pdf-folder --folder "%USERPROFILE%\Desktop\PDFs"
 ```
 
 **Example (if your PDFs are in Documents):**
 ```
-python -m src.cli process-pdf-folder --folder "%USERPROFILE%\Documents\Deal_PDFs" --out output/all_deals.xlsx
+python -m src.cli process-pdf-folder --folder "%USERPROFILE%\Documents\Deal_PDFs"
+```
+
+**What happens:**
+1. The program finds all PDF files in the folder
+2. Processes each one (showing progress as it goes)
+3. **Adds** all deals to the "Deal list" sheet in `output/deals.xlsx`
+
+**After it runs:** You'll see:
+```
+Processed 5 PDFs: 5 success, 0 failed
+Added to sheet 'Deal list' in output/deals.xlsx
 ```
 
 **Optional settings:**
@@ -232,20 +306,93 @@ python -m src.cli process-pdf-folder --folder "%USERPROFILE%\Documents\Deal_PDFs
 
 **Example with options:**
 ```
-python -m src.cli process-pdf-folder --folder "%USERPROFILE%\Desktop\PDFs" --out output/all_deals.xlsx --max 10
+python -m src.cli process-pdf-folder --folder "%USERPROFILE%\Desktop\PDFs" --max 10 --date "2024/02/01"
 ```
+
+---
+
+## The Output File Structure
+
+Everything goes into **one Excel file** with **four sheets**:
+
+```
+output/deals.xlsx
+│
+├── Deal list    ← All PDFs go here (Process 1 - Incoming deals)
+│                  This matches your purple "Deal list" sheet
+│
+├── Sweden       ← Swedish articles go here (Process 2)
+│                  Columns: Country, Date, Buyer, Seller, Location,
+│                           Property type, Price (MSEK), Area, Yield, etc.
+│
+├── Denmark      ← Danish articles go here (Process 2)
+│                  Columns: Country, Date, Buyer, Seller, Location,
+│                           Property type, Price (MDKK), Area, etc.
+│
+└── Finland      ← Finnish articles go here (Process 2)
+                   Columns: Source, Country, Date, Buyer, Seller,
+                            Location, Property type, Price (MEUR), etc.
+```
+
+**Important notes about the output:**
+
+1. **Column order matches your Excel sheets** — You can copy-paste directly into your presentation
+
+2. **Each country has its own column layout** — Sweden uses MSEK, Denmark uses MDKK, Finland uses MEUR
+
+3. **Price is in millions** — A 743 million SEK deal shows as "743" (not "743000000")
+
+4. **Week number is auto-calculated** — Based on the date
+
+5. **Price per sqm is auto-calculated** — Based on price and area
+
+6. **Property types are normalized** — "warehouse", "lager", "logistics" all become "Logistics"
+
+7. **City names are translated** — Göteborg → Gothenburg, København → Copenhagen
 
 ---
 
 ## Finding Your Output Files
 
-After running any command, your Excel file is saved in the `output` folder inside the program folder.
+All your deals are saved in the `output` folder inside the program folder.
 
 **To open your output:**
 1. Open File Explorer
 2. Navigate to the program folder (e.g., `Documents\nordics-real-estate-automation-main`)
 3. Open the `output` folder
-4. Double-click your Excel file to open it
+4. Double-click `deals.xlsx` to open it in Excel
+
+**First time running?** The file will be created automatically when you process your first deal.
+
+**Starting fresh?** If you want to start over with a new file, simply delete `output/deals.xlsx` and run any command again.
+
+---
+
+## Typical Weekly Workflow
+
+Here's how to use this tool for your Friday presentation:
+
+### Throughout the week:
+
+**When you get a new PDF from a broker:**
+```
+python -m src.cli process-pdf-file --input "path\to\new_im.pdf" --date "2024/02/10"
+```
+→ Adds to "Deal list" sheet
+
+**When you see a transaction article:**
+```
+python -m src.cli process-url --url "https://fastighetsvarlden.se/article..."
+```
+→ Adds to "Sweden" (or Denmark/Finland) sheet
+
+### On Friday:
+
+1. Open `output/deals.xlsx`
+2. All your deals are already organized into the correct sheets
+3. Copy-paste into your presentation sheets
+
+**That's it!** No more manual data entry.
 
 ---
 
@@ -289,44 +436,76 @@ set ANTHROPIC_API_KEY=your-key-here
 
 **Solution:** Don't double-click Python files. Always run commands from Command Prompt as shown in this guide.
 
+### The wrong country sheet was used
+
+**Solution:** The tool detects country from the article text. If it guessed wrong:
+1. Check if the article mentions the correct country
+2. You can manually move the row to the correct sheet in Excel
+
+### I want to start over with a fresh file
+
+**Solution:** Delete the output file and run a command:
+```
+del output\deals.xlsx
+python -m src.cli process-url --url "..."
+```
+
 ---
 
 ## Tips for Best Results
 
-1. **Article URLs:** Works best with Nordic real estate news sites (Fastighetsvarlden, Estate Media, etc.)
+1. **Article URLs:** Works best with Nordic real estate news sites (Fastighetsvarlden, Estate Media, Eiendomswatch, etc.)
 
 2. **PDF quality:** Clear, text-based PDFs work best. Scanned images may not work well.
 
-3. **One article at a time:** The article processor handles one URL per command. Run the command multiple times for multiple articles.
+3. **One article at a time:** The article processor handles one URL per command. Run it multiple times for multiple articles.
 
 4. **Batch PDFs:** Put all related PDFs in one folder for batch processing.
 
 5. **Keep Command Prompt open:** If you're processing multiple items, keep the same Command Prompt window open so you don't have to re-enter your API key.
 
----
-
-## What the Output Looks Like
-
-The Excel file contains one row per deal with these columns:
-- Date, Week number
-- Property name, Address, Location
-- Property type (Office, Residential, Logistics, etc.)
-- Area (square meters)
-- Price (in local currency)
-- Buyer and Seller
-- Yield, NOI, Occupancy
-- And more...
-
-Numbers are automatically formatted correctly, and Swedish city names are translated to English (e.g., Göteborg → Gothenburg).
+6. **Don't worry about duplicates:** Each run adds a new row, so if you accidentally process the same article twice, just delete the duplicate row in Excel.
 
 ---
 
-## Need Help?
+## What Gets Extracted
 
-If something isn't working:
-1. Make sure you followed each step exactly
-2. Check the Troubleshooting section above
-3. Try closing Command Prompt and starting fresh from Step 4
+### For Articles (Process 2 - Transactions):
+
+| Field | Description |
+|-------|-------------|
+| Country | Sweden, Denmark, or Finland |
+| Date | Transaction date |
+| Buyer | Company buying the property |
+| Seller | Company selling the property |
+| Location | City name |
+| Property type | Office, Residential, Logistics, etc. |
+| Price | In millions (MSEK, MDKK, or MEUR) |
+| Area | Square meters |
+| Price per sqm | Auto-calculated |
+| Yield | If mentioned in article |
+| Comments | Brief summary of the deal |
+| Source | Article URL |
+
+### For PDFs (Process 1 - Incoming Deals):
+
+| Field | Description |
+|-------|-------------|
+| Date received | When you got the PDF |
+| Week nr. | Auto-calculated from date |
+| Type | IM or Teaser |
+| Project Name | Deal/property name |
+| Country | Sweden, Denmark, or Finland |
+| Location | City/area |
+| Use | Property type (Office, Logistics, etc.) |
+| Leasable area | Square meters |
+| NOI | Net Operating Income |
+| NOI per sqm | Auto-calculated |
+| Yield | If stated |
+| Deal value | Asking price |
+| WAULT | Weighted average lease term |
+| Occupancy | Economic occupancy rate |
+| Comment | Brief summary |
 
 ---
 
@@ -337,20 +516,22 @@ If something isn't working:
 set ANTHROPIC_API_KEY=your-key-here
 ```
 
-**Process one article:**
+**Process one article (goes to Sweden/Denmark/Finland sheet):**
 ```
-python -m src.cli process-url --url "https://example.com/article" --out output/deal.xlsx
-```
-
-**Process one PDF:**
-```
-python -m src.cli process-pdf-file --input "C:\path\to\file.pdf" --out output/deal.xlsx
+python -m src.cli process-url --url "https://example.com/article"
 ```
 
-**Process folder of PDFs:**
+**Process one PDF (goes to Deal list sheet):**
 ```
-python -m src.cli process-pdf-folder --folder "C:\path\to\folder" --out output/all_deals.xlsx
+python -m src.cli process-pdf-file --input "C:\path\to\file.pdf"
 ```
+
+**Process folder of PDFs (all go to Deal list sheet):**
+```
+python -m src.cli process-pdf-folder --folder "C:\path\to\folder"
+```
+
+**All output goes to:** `output/deals.xlsx`
 
 ---
 
@@ -361,4 +542,27 @@ See [docs/QUICK_START.md](docs/QUICK_START.md) for the full command reference an
 **Run tests:**
 ```
 python -m pytest tests/ -v
+```
+
+**Project structure:**
+```
+src/
+├── cli.py                  # Command-line interface
+├── extract/                # LLM extraction (prompts, API calls)
+├── normalize/              # Data normalization (dates, numbers, property types)
+├── render/                 # Output rendering (TSV, Excel)
+├── pipelines/              # End-to-end workflows
+├── fetch/                  # URL and PDF text extraction
+└── validate/               # Schema validation
+
+config/
+├── schemas/                # Column definitions for each sheet type
+│   ├── transactions.schema.json    # Sweden/Denmark/Finland columns
+│   └── inbound_purple.schema.json  # Deal list columns
+└── mappings/               # Normalization rules
+    ├── property_type_map.yml       # "warehouse" → "Logistics"
+    └── city_map.yml                # "Göteborg" → "Gothenburg"
+
+tests/                      # Unit tests (164 tests)
+output/                     # Generated Excel files go here
 ```
