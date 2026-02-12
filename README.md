@@ -4,6 +4,11 @@ Extracts structured deal data from news articles and broker PDFs (IMs/teasers) i
 
 **Supports:** Sweden, Denmark, Finland
 
+## Requirements
+
+- Python 3.9 or higher
+- Anthropic API key ([get one here](https://console.anthropic.com/))
+
 ## Quick Install
 
 ```bash
