@@ -3,14 +3,8 @@
 ## Setup
 
 ```bash
-# Install core dependencies
-pip install anthropic pyyaml pytest
-
-# For URL fetching (optional)
-pip install requests beautifulsoup4
-
-# For direct PDF reading (optional)
-pip install pypdf
+# Install all dependencies
+pip install -r requirements.txt
 
 # Set API key
 export ANTHROPIC_API_KEY="your-key-here"
@@ -53,14 +47,33 @@ python -m src.cli extract-pdf-text --input document.pdf --out document.txt
 
 ---
 
+## Batch Process PDFs
+
+```bash
+# Process all PDFs in a folder → single Excel file
+python -m src.cli process-pdf-folder --folder /path/to/pdfs --out output/all_deals.xlsx
+
+# With options
+python -m src.cli process-pdf-folder --folder /path/to/pdfs --out output/deals.xlsx --date "2024/01/15" --max 10
+```
+
+Options:
+- `--folder` - Path to folder containing PDF files (required)
+- `--out` - Output Excel file (default: output/batch_inbound.xlsx)
+- `--date` - Date received for all PDFs (optional)
+- `--max` - Maximum PDFs to process (default: 20)
+
+---
+
 ## All CLI Commands
 
 | Command | Purpose |
 |---------|---------|
-| `process-article` | Article text file → paste-ready TSV |
-| `process-url` | Fetch URL → paste-ready TSV |
-| `process-pdf` | PDF text file → paste-ready TSV |
-| `process-pdf-file` | PDF file directly → paste-ready TSV |
+| `process-url` | Fetch URL → Excel output |
+| `process-pdf-file` | PDF file → Excel output |
+| `process-pdf-folder` | Folder of PDFs → single Excel output |
+| `process-article` | Article text file → TSV |
+| `process-pdf` | PDF text file → TSV |
 | `extract-pdf-text` | Extract text from PDF (no LLM) |
 | `extract-transaction` | Article → JSON (no TSV) |
 | `extract-inbound` | PDF → JSON (no TSV) |

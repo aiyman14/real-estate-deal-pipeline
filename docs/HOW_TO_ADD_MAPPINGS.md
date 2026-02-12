@@ -97,4 +97,4 @@ After any change:
 python -m pytest tests/ -v --tb=short
 ```
 
-All 120 tests should pass.
+All tests should pass (currently 144).
