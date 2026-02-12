@@ -14,6 +14,7 @@ from src.normalize.date_normalizer import normalize_date
 from src.normalize.number_normalizer import normalize_number, normalize_price, normalize_area, normalize_yield
 from src.normalize.country_normalizer import normalize_country
 from src.normalize.designation_normalizer import normalize_property_designation
+from src.normalize.city_normalizer import normalize_city
 
 
 # Field definitions for each schema type
@@ -78,6 +79,13 @@ def normalize_inbound_row(row: Dict[str, Any], property_map: Dict[str, Any]) -> 
             out["Country"] = canon
         meta["Country_confidence"] = conf
 
+    # Location field (city name normalization)
+    if "Location" in out and out["Location"]:
+        canon, conf = normalize_city(out["Location"])
+        if canon:
+            out["Location"] = canon
+        meta["Location_confidence"] = conf
+
     # Number fields (prices, areas, etc.)
     for field in INBOUND_NUMBER_FIELDS:
         if field in out and out[field]:
@@ -135,6 +143,13 @@ def normalize_transactions_row(row: Dict[str, Any], property_map: Dict[str, Any]
         if canon:
             out["Country"] = canon
         meta["Country_confidence"] = conf
+
+    # Location field (city name normalization)
+    if "Location" in out and out["Location"]:
+        canon, conf = normalize_city(out["Location"])
+        if canon:
+            out["Location"] = canon
+        meta["Location_confidence"] = conf
 
     # Number fields (prices, areas)
     for field in TRANSACTIONS_NUMBER_FIELDS:
