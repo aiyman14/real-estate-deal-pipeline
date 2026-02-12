@@ -58,6 +58,8 @@ CRITICAL RULES:
 10. For NOI: Extract ONLY the total NOI amount as a single number. Do NOT combine with NOI per sqm.
 11. For Base rent: Look for "bashyra", "grundhyra", "base rent", "annual rent" - the contractual rent amount per sqm
 12. For Occupancy: Look for "uthyrningsgrad", "occupancy rate", "vacancy" (inverse) - express as percentage
+13. For Location: Use municipality/kommun level (administrative area), NOT smaller towns. Example: "Sigtuna" NOT "Märsta".
+14. For Broker: Extract brand/professional name, not full legal entity name. "Croisette" NOT "CCap Market AB (Croisette)".
 
 You extract deal information from broker PDFs, IMs, and teasers."""
 
@@ -68,16 +70,16 @@ Return a JSON object with these fields (use null if not explicitly stated):
   "Type": "<'IM' if Investment Memorandum, 'Teaser' if teaser/summary document, null if unclear>",
   "Project Name": "<document/property name - not a generic title like 'Investment Memorandum'>",
   "Seller": "<seller name if stated>",
-  "Broker": "<broker/advisor name>",
+  "Broker": "<broker/advisor brand name - if format is 'Company (Brand)' or 'Company - Brand', extract the brand (e.g., 'Croisette' not 'CCap Market AB')>",
   "Country": "<Sweden|Denmark|Finland or local name>",
-  "Location": "<city/municipality name>",
+  "Location": "<municipality/kommun name (NOT town/locality) - e.g., 'Sigtuna' not 'Märsta', 'Stockholm' not 'Södermalm'>",
   "Portfolio": <true if multiple properties, false if single, null if unclear>,
   "Address": "<street address with number, e.g. 'Storgatan 12' - NOT city name>",
   "Postal code": "<postal code if stated>",
   "Property designation": "<property designation/fastighetsbeteckning if stated>",
   "Use": "<property type/use as described>",
   "Leasable area, sqm": "<area with units as written>",
-  "Base rent": "<annual base rent / bashyra / grundhyra per sqm with units>",
+  "Base rent": "<base rent/grundhyra/bashyra per sqm as written - look for 'hyra', 'bashyra', 'grundhyra' followed by kr/sqm or SEK/m²>",
   "NOI": "<total NOI/driftnetto as single number with currency - NOT per sqm>",
   "WAULT": "<WAULT in years as written>",
   "Occupancy": "<occupancy rate / uthyrningsgrad as percentage>",

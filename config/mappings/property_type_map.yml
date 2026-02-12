@@ -92,6 +92,10 @@ synonyms:
     - myndighet
     - domstol
     - tingsrätt
+    - förskola
+    - preschool
+    - samhällsfastighet
+    - samhälls
 
   Social Infrastructure:
     - social infrastructure
@@ -108,6 +112,13 @@ synonyms:
     - skola
     - äldreboende
     - omsorg
+    - lss
+    - hvb
+    - group home
+    - disability housing
+    - omsorgsboende
+    - vård och omsorg
+    - omsorgsbostad
 
   Data Center:
     - data center

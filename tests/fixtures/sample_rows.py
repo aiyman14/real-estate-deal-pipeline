@@ -3,9 +3,11 @@ Test fixtures for full row normalization.
 """
 
 # Sample inbound row - before normalization
+# Note: "Type" is document type (IM/Teaser), not property type
+# "Use" is the property type field
 SAMPLE_INBOUND_RAW = {
     "Date received": "15 januari 2024",
-    "Type": "kontorsfastighet",
+    "Type": "IM",
     "Project Name": "Test Project Alpha",
     "Country": "Sweden",
     "Location": "Stockholm",
@@ -20,11 +22,11 @@ SAMPLE_INBOUND_RAW = {
 # Expected output after normalization
 SAMPLE_INBOUND_EXPECTED = {
     "Date received": "2024/01/15",
-    "Type": "Office",
+    "Type": "IM",  # Document type passes through unchanged
     "Project Name": "Test Project Alpha",
     "Country": "Sweden",
     "Location": "Stockholm",
-    "Use": "Office",
+    "Use": "Office",  # Property type gets normalized
     "Leasable area, sqm": 15000,
     "NOI, CCY": 2500000,
     "Yield": 4.5,

@@ -6,7 +6,7 @@ This normalizer abbreviates the repeated prefixes for cleaner output.
 
 Example:
 - Input:  "Sigtuna Märsta 1:257, Sigtuna Märsta 1:259, Sigtuna Märsta 1:261"
-- Output: "Sigtuna Märsta 1:257, 1:259, 1:261"
+- Output: "Sigtuna Märsta 1:257; 1:259; 1:261"
 """
 
 import re
@@ -59,4 +59,4 @@ def normalize_property_designation(raw_value: str) -> Tuple[str, str]:
             # Different prefix, keep as-is
             result.append(part)
 
-    return (", ".join(result), "high")
+    return ("; ".join(result), "high")

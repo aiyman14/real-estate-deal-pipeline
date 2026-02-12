@@ -44,11 +44,13 @@ class TestInboundRowNormalizer:
         assert meta["Date received_confidence"] == "high"
 
     def test_property_type_normalized(self, property_map):
-        """Test property type is normalized via synonyms."""
-        row = {"Type": "kontorsfastighet", "Use": "warehouse"}
+        """Test property type (Use field) is normalized via synonyms.
+        Note: 'Type' is document type (IM/Teaser), not property type.
+        """
+        row = {"Type": "IM", "Use": "warehouse"}
         result, meta = normalize_inbound_row(row, property_map)
-        assert result["Type"] == "Office"
-        assert result["Use"] == "Logistics"
+        assert result["Type"] == "IM"  # Document type passes through unchanged
+        assert result["Use"] == "Logistics"  # Property type gets normalized
 
     def test_numbers_normalized(self, property_map):
         """Test numeric fields are normalized."""

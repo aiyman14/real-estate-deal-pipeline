@@ -20,6 +20,7 @@ MULTIPLIERS = {
     "tusen": 1_000,  # Swedish
     "tusind": 1_000,  # Danish
     "tuhatta": 1_000,  # Finnish
+    "tkr": 1_000,  # Swedish: tusen kronor (thousand kronor)
     # Millions
     "m": 1_000_000,
     "mn": 1_000_000,
@@ -45,15 +46,15 @@ MULTIPLIERS = {
     "miljardia": 1_000_000_000,  # Finnish
 }
 
-# Currency symbols/codes to strip
+# Currency symbols/codes to strip (use word boundaries for "kr" to avoid matching "tkr")
 CURRENCY_PATTERNS = re.compile(
-    r"(?:SEK|DKK|EUR|USD|NOK|GBP|kr|€|\$|£)\s*",
+    r"(?:SEK|DKK|EUR|USD|NOK|GBP|\bkr\b|€|\$|£)\s*",
     re.IGNORECASE
 )
 
 # Unit suffixes to strip (area, etc.)
 UNIT_PATTERNS = re.compile(
-    r"\s*(?:m2|m²|sqm|kvm|square\s*meters?|kvadratmeter)\s*$",
+    r"\s*(?:m2|m²|sqm|kvm|square\s*meters?|kvadratmeter|år|years?)\s*$",
     re.IGNORECASE
 )
 

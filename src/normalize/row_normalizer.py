@@ -32,7 +32,7 @@ INBOUND_NUMBER_FIELDS = [
     "Price, CCY/sqm",
 ]
 INBOUND_YIELD_FIELDS = ["Yield", "Yield2", "Economic occupancy rate, %"]
-INBOUND_PROPERTY_TYPE_FIELDS = ["Type", "Use"]
+INBOUND_PROPERTY_TYPE_FIELDS = ["Use"]
 
 TRANSACTIONS_DATE_FIELDS = ["Date"]
 TRANSACTIONS_NUMBER_FIELDS = [

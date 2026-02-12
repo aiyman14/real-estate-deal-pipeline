@@ -87,3 +87,37 @@ class TestNumberFormats:
         """Test mixed European format (dots thousands, comma decimal)."""
         result, _ = normalize_number("1.500.000,50", as_integer=False)
         assert result == 1500000.5
+
+
+class TestSwedishAbbreviations:
+    """Test Swedish-specific abbreviations added in Round 2."""
+
+    def test_tkr_multiplier(self):
+        """Test tkr (tusen kronor / thousand kronor) multiplier."""
+        assert normalize_price("21 000 tkr")[0] == 21000000
+        assert normalize_price("21000 tkr")[0] == 21000000
+        assert normalize_price("5 624 tkr")[0] == 5624000
+
+    def test_ar_suffix_stripped(self):
+        """Test år (years) suffix is stripped from WAULT values."""
+        result, conf = normalize_yield("11,8 år")
+        assert result == 11.8
+        assert conf == "high"
+
+        result, conf = normalize_yield("11.8 år")
+        assert result == 11.8
+        assert conf == "high"
+
+        result, conf = normalize_yield("15 år")
+        assert result == 15
+        assert conf == "high"
+
+    def test_years_suffix_stripped(self):
+        """Test years suffix is stripped."""
+        result, conf = normalize_yield("5 years")
+        assert result == 5
+        assert conf == "high"
+
+        result, conf = normalize_yield("3.5 year")
+        assert result == 3.5
+        assert conf == "high"
