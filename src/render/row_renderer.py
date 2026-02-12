@@ -8,6 +8,7 @@ Handles:
 - Value formatting for Excel compatibility
 """
 
+from datetime import date
 from typing import Any, Dict, List, Optional
 import json
 from pathlib import Path
@@ -84,6 +85,17 @@ def render_inbound_row(
     if price and area and isinstance(price, (int, float)) and isinstance(area, (int, float)) and area > 0:
         row["Price, CCY/sqm"] = round(price / area)
 
+    # Compute derived: Week nr. from Date received
+    date_received = row.get("Date received")
+    if date_received and isinstance(date_received, str) and "/" in date_received:
+        try:
+            parts = date_received.split("/")
+            if len(parts) == 3:
+                d = date(int(parts[0]), int(parts[1]), int(parts[2]))
+                row["Week nr."] = d.isocalendar()[1]
+        except (ValueError, IndexError):
+            pass
+
     # Build output with all columns in order
     for col in columns:
         val = row.get(col, "")
@@ -100,10 +112,13 @@ def _format_value(val: Any) -> str:
         return ""
     if isinstance(val, bool):
         return "Yes" if val else "No"
+    if isinstance(val, int):
+        # Format integers with comma thousands separator
+        return f"{val:,}"
     if isinstance(val, float):
         # Check if it's a whole number
         if val.is_integer():
-            return str(int(val))
+            return f"{int(val):,}"
         # Keep 2 decimal places for yields/percentages
         return f"{val:.2f}"
     return str(val)

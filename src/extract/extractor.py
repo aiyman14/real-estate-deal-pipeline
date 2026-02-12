@@ -174,7 +174,7 @@ class Extractor:
 
         # Direct mappings
         direct_fields = [
-            "Project Name", "Seller", "Broker", "Country", "Location",
+            "Type", "Project Name", "Seller", "Broker", "Country", "Location",
             "Portfolio", "Address", "Postal code", "Property designation",
             "Comments"
         ]

@@ -13,6 +13,7 @@ from src.normalize.property_type import normalize_property_type
 from src.normalize.date_normalizer import normalize_date
 from src.normalize.number_normalizer import normalize_number, normalize_price, normalize_area, normalize_yield
 from src.normalize.country_normalizer import normalize_country
+from src.normalize.designation_normalizer import normalize_property_designation
 
 
 # Field definitions for each schema type
@@ -92,6 +93,13 @@ def normalize_inbound_row(row: Dict[str, Any], property_map: Dict[str, Any]) -> 
             if canon != "":
                 out[field] = canon
             meta[f"{field}_confidence"] = conf
+
+    # Property designation (abbreviate repeated prefixes)
+    if "Property designation" in out and out["Property designation"]:
+        canon, conf = normalize_property_designation(out["Property designation"])
+        if canon:
+            out["Property designation"] = canon
+        meta["Property designation_confidence"] = conf
 
     return out, meta
 

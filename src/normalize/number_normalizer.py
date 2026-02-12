@@ -51,6 +51,12 @@ CURRENCY_PATTERNS = re.compile(
     re.IGNORECASE
 )
 
+# Unit suffixes to strip (area, etc.)
+UNIT_PATTERNS = re.compile(
+    r"\s*(?:m2|m²|sqm|kvm|square\s*meters?|kvadratmeter)\s*$",
+    re.IGNORECASE
+)
+
 
 def normalize_number(raw_value: Any, as_integer: bool = True) -> Tuple[Union[str, int, float], str]:
     """
@@ -76,6 +82,9 @@ def normalize_number(raw_value: Any, as_integer: bool = True) -> Tuple[Union[str
     text = str(raw_value).strip()
     if not text:
         return ("", "low")
+
+    # Remove unit suffixes (m2, sqm, etc.)
+    text = UNIT_PATTERNS.sub("", text).strip()
 
     # Remove currency symbols/codes
     text = CURRENCY_PATTERNS.sub("", text).strip()

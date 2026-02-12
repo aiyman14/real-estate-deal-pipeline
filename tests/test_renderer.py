@@ -63,13 +63,13 @@ class TestFormatValue:
         assert _format_value(False) == "No"
 
     def test_whole_float(self):
-        assert _format_value(1500000.0) == "1500000"
+        assert _format_value(1500000.0) == "1,500,000"
 
     def test_decimal_float(self):
         assert _format_value(4.5) == "4.50"
 
     def test_integer(self):
-        assert _format_value(1500000) == "1500000"
+        assert _format_value(1500000) == "1,500,000"
 
     def test_string_passthrough(self):
         assert _format_value("Stockholm") == "Stockholm"
@@ -85,7 +85,7 @@ class TestTransactionRenderer:
             "Price": 150000000,
         }
         rendered = render_transaction_row(row, TRANSACTION_SCHEMA)
-        assert rendered["Price, SEK"] == "150000000"
+        assert rendered["Price, SEK"] == "150,000,000"
         assert rendered["Price, DKK"] == ""
         assert rendered["Price, EUR"] == ""
 
@@ -95,7 +95,7 @@ class TestTransactionRenderer:
             "Price": 50000000,
         }
         rendered = render_transaction_row(row, TRANSACTION_SCHEMA)
-        assert rendered["Price, DKK"] == "50000000"
+        assert rendered["Price, DKK"] == "50,000,000"
         assert rendered["Price, SEK"] == ""
 
     def test_derived_price_per_sqm(self):
@@ -106,7 +106,7 @@ class TestTransactionRenderer:
             "Area, m2": 10000,
         }
         rendered = render_transaction_row(row, TRANSACTION_SCHEMA)
-        assert rendered["Price, CCY/m2"] == "15000"
+        assert rendered["Price, CCY/m2"] == "15,000"
 
     def test_missing_columns_empty(self):
         """Missing columns should be empty strings."""
@@ -125,7 +125,7 @@ class TestInboundRenderer:
             "Leasable area, sqm": 45000,
         }
         rendered = render_inbound_row(row, INBOUND_SCHEMA)
-        assert rendered["NOI, CCY/sqm"] == "633"
+        assert rendered["NOI, CCY/sqm"] == "633"  # Small number, no comma needed
 
     def test_portfolio_boolean(self):
         row = {"Portfolio": True}
