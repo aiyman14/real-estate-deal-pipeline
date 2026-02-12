@@ -108,6 +108,16 @@ def main() -> None:
     p_extract_pdf.add_argument("--input", required=True, help="Path to PDF file")
     p_extract_pdf.add_argument("--out", default=None, help="Output text file path")
 
+    # ---------- Batch processing commands ----------
+    p_batch_pdf = sub.add_parser(
+        "process-pdf-folder",
+        help="Process all PDFs in a folder -> single Excel output (requires ANTHROPIC_API_KEY)"
+    )
+    p_batch_pdf.add_argument("--folder", required=True, help="Path to folder containing PDF files")
+    p_batch_pdf.add_argument("--out", default="output/batch_inbound.xlsx", help="Output Excel file path")
+    p_batch_pdf.add_argument("--date", default="", help="Date received for all PDFs (yyyy/mm/dd)")
+    p_batch_pdf.add_argument("--max", type=int, default=20, help="Maximum PDFs to process (default: 20)")
+
     args = parser.parse_args()
 
     # ---------- Command dispatch ----------
@@ -262,6 +272,29 @@ def main() -> None:
         else:
             print("FAILED ❌")
             print(msg)
+
+    elif args.command == "process-pdf-folder":
+        from src.pipelines.full_pipeline import process_pdf_folder
+
+        folder = Path(args.folder)
+        if not folder.is_dir():
+            print(f"FAILED ❌ Not a directory: {folder}")
+        else:
+            out_path = Path(args.out)
+            print(f"Processing PDFs in: {folder}")
+            print(f"Output: {out_path}")
+            print("-" * 40)
+            ok, msg, results = process_pdf_folder(
+                folder,
+                out_path,
+                args.date,
+                max_files=args.max,
+            )
+            print("-" * 40)
+            if ok:
+                print(f"DONE ✅ {msg}")
+            else:
+                print(f"FAILED ❌ {msg}")
 
 
 if __name__ == "__main__":

@@ -316,3 +316,92 @@ def process_pdf_direct(
         return False, f"Extraction failed: {e}", ""
     except Exception as e:
         return False, f"Error: {e}", ""
+
+
+def process_pdf_folder(
+    folder_path: Path,
+    output_path: Optional[Path] = None,
+    date_received: str = "",
+    api_key: Optional[str] = None,
+    max_files: int = 20,
+) -> Tuple[bool, str, List[Dict[str, Any]]]:
+    """
+    Batch process all PDF files in a folder -> single Excel output.
+
+    Args:
+        folder_path: Path to folder containing PDF files
+        output_path: Output Excel file path (.xlsx)
+        date_received: Date the PDFs were received (yyyy/mm/dd)
+        api_key: Optional Anthropic API key
+        max_files: Maximum number of PDFs to process (default 20)
+
+    Returns:
+        Tuple of (success, message, list_of_results)
+        - Each result is {"file": filename, "success": bool, "row": dict or None, "error": str or None}
+    """
+    # Find all PDF files in folder
+    pdf_files = sorted(folder_path.glob("*.pdf"))
+    if not pdf_files:
+        return False, f"No PDF files found in {folder_path}", []
+
+    if len(pdf_files) > max_files:
+        print(f"Warning: Found {len(pdf_files)} PDFs, processing first {max_files}")
+        pdf_files = pdf_files[:max_files]
+
+    # Load resources once (shared across all PDFs)
+    try:
+        extractor = Extractor(api_key=api_key)
+        property_map = load_property_map()
+        schema = load_schema("config/schemas/inbound_purple.schema.json")
+        columns = [c["name"] for c in schema["columns"]]
+    except Exception as e:
+        return False, f"Failed to load resources: {e}", []
+
+    results: List[Dict[str, Any]] = []
+    rendered_rows: List[Dict[str, Any]] = []
+    success_count = 0
+    fail_count = 0
+
+    for i, pdf_path in enumerate(pdf_files, 1):
+        print(f"[{i}/{len(pdf_files)}] Processing: {pdf_path.name}")
+
+        # Extract text from PDF
+        ok, msg, document_text = extract_text_from_pdf(pdf_path)
+        if not ok:
+            print(f"  ERROR: Failed to read PDF: {msg}")
+            results.append({"file": pdf_path.name, "success": False, "row": None, "error": msg})
+            fail_count += 1
+            continue
+
+        try:
+            # Extract deal data
+            raw_row, extract_meta = extractor.extract_inbound(document_text, date_received)
+
+            # Normalize
+            normalized_row, norm_meta = normalize_inbound_row(raw_row, property_map)
+
+            # Render
+            rendered_row = render_inbound_row(normalized_row, schema)
+            rendered_rows.append(rendered_row)
+
+            results.append({"file": pdf_path.name, "success": True, "row": normalized_row, "error": None})
+            success_count += 1
+            print(f"  OK: {normalized_row.get('Project Name', 'Unknown')}")
+
+        except ExtractionError as e:
+            print(f"  ERROR: Extraction failed: {e}")
+            results.append({"file": pdf_path.name, "success": False, "row": None, "error": str(e)})
+            fail_count += 1
+        except Exception as e:
+            print(f"  ERROR: {e}")
+            results.append({"file": pdf_path.name, "success": False, "row": None, "error": str(e)})
+            fail_count += 1
+
+    # Write output file
+    if output_path and rendered_rows:
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        write_excel(rendered_rows, columns, output_path, sheet_name="Inbound")
+        print(f"\nWrote {len(rendered_rows)} rows to: {output_path}")
+
+    summary = f"Processed {len(pdf_files)} PDFs: {success_count} success, {fail_count} failed"
+    return success_count > 0, summary, results
