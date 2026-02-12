@@ -13,7 +13,7 @@ from src.extract.extractor import Extractor, ExtractionError
 from src.normalize.row_normalizer import normalize_transactions_row, normalize_inbound_row
 from src.normalize.load_mappings import load_property_map
 from src.render.row_renderer import row_to_tsv_line, render_transaction_row, render_inbound_row, get_transaction_columns
-from src.render.excel_writer import write_excel
+from src.render.excel_writer import write_excel, append_to_excel, get_sheet_name_for_country, SHEET_DEAL_LIST
 from src.validate.schema_loader import load_schema
 from src.fetch.url_fetcher import fetch_article_from_url
 from src.fetch.pdf_reader import extract_text_from_pdf
@@ -211,6 +211,7 @@ def process_article_url(
     url: str,
     output_path: Optional[Path] = None,
     api_key: Optional[str] = None,
+    append: bool = True,
 ) -> Tuple[bool, str, str]:
     """
     Full pipeline: URL -> fetch article -> extract -> normalize -> TSV.
@@ -219,6 +220,7 @@ def process_article_url(
         url: Article URL to fetch
         output_path: Optional output file (.tsv or .xlsx)
         api_key: Optional Anthropic API key
+        append: If True, append to existing Excel file (default). If False, create new file.
 
     Returns:
         Tuple of (success, message, tsv_output)
@@ -254,7 +256,12 @@ def process_article_url(
         if output_path:
             output_path.parent.mkdir(parents=True, exist_ok=True)
             if output_path.suffix.lower() == ".xlsx":
-                write_excel([rendered_row], columns, output_path, sheet_name="Transactions")
+                if append:
+                    # Append to correct country sheet
+                    sheet_name = get_sheet_name_for_country(country)
+                    row_num = append_to_excel(rendered_row, columns, output_path, sheet_name)
+                else:
+                    write_excel([rendered_row], columns, output_path, sheet_name=country)
             else:
                 output_path.write_text(tsv + "\n", encoding="utf-8")
 
@@ -271,6 +278,7 @@ def process_pdf_direct(
     output_path: Optional[Path] = None,
     date_received: str = "",
     api_key: Optional[str] = None,
+    append: bool = True,
 ) -> Tuple[bool, str, str]:
     """
     Full pipeline: PDF file -> extract text -> extract deal -> normalize -> TSV.
@@ -280,6 +288,7 @@ def process_pdf_direct(
         output_path: Optional output file (.tsv or .xlsx)
         date_received: Date the PDF was received (yyyy/mm/dd)
         api_key: Optional Anthropic API key
+        append: If True, append to existing Excel file (default). If False, create new file.
 
     Returns:
         Tuple of (success, message, tsv_output)
@@ -312,7 +321,11 @@ def process_pdf_direct(
         if output_path:
             output_path.parent.mkdir(parents=True, exist_ok=True)
             if output_path.suffix.lower() == ".xlsx":
-                write_excel([rendered_row], columns, output_path, sheet_name="Inbound")
+                if append:
+                    # Append to Deal list sheet
+                    row_num = append_to_excel(rendered_row, columns, output_path, SHEET_DEAL_LIST)
+                else:
+                    write_excel([rendered_row], columns, output_path, sheet_name=SHEET_DEAL_LIST)
             else:
                 output_path.write_text(tsv + "\n", encoding="utf-8")
 
@@ -405,7 +418,9 @@ def process_pdf_folder(
     # Write output file
     if output_path and rendered_rows:
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        write_excel(rendered_rows, columns, output_path, sheet_name="Inbound")
+        # Use append mode to add to Deal list sheet
+        for rendered_row in rendered_rows:
+            append_to_excel(rendered_row, columns, output_path, SHEET_DEAL_LIST)
 
     summary = f"Processed {len(pdf_files)} PDFs: {success_count} success, {fail_count} failed"
     return success_count > 0, summary, results

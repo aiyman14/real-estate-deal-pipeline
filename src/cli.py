@@ -114,7 +114,7 @@ def main() -> None:
         help="Process all PDFs in a folder -> single Excel output (requires ANTHROPIC_API_KEY)"
     )
     p_batch_pdf.add_argument("--folder", required=True, help="Path to folder containing PDF files")
-    p_batch_pdf.add_argument("--out", default="output/batch_inbound.xlsx", help="Output Excel file path")
+    p_batch_pdf.add_argument("--out", default="output/deals.xlsx", help="Output Excel file path")
     p_batch_pdf.add_argument("--date", default="", help="Date received for all PDFs (yyyy/mm/dd)")
     p_batch_pdf.add_argument("--max", type=int, default=20, help="Maximum PDFs to process (default: 20)")
 
@@ -224,22 +224,34 @@ def main() -> None:
 
     elif args.command == "process-url":
         from src.pipelines.full_pipeline import process_article_url
+        from src.render.excel_writer import get_sheet_name_for_country
 
-        out_path = Path(args.out) if args.out else Path("output/article.xlsx")
+        out_path = Path(args.out) if args.out else Path("output/deals.xlsx")
         print(f"Processing: {args.url}")
         ok, msg, tsv = process_article_url(
             args.url,
             out_path,
         )
         if ok:
-            print(f"Done. Output: {out_path}")
+            # Extract country from TSV to show which sheet was updated
+            lines = tsv.split("\n")
+            if len(lines) >= 2:
+                headers = lines[0].split("\t")
+                values = lines[1].split("\t")
+                country_idx = headers.index("Country") if "Country" in headers else 0
+                country = values[country_idx] if country_idx < len(values) else "Sweden"
+                sheet_name = get_sheet_name_for_country(country)
+                print(f"Done. Added to sheet '{sheet_name}' in {out_path}")
+            else:
+                print(f"Done. Output: {out_path}")
         else:
             print(f"FAILED: {msg}")
 
     elif args.command == "process-pdf-file":
         from src.pipelines.full_pipeline import process_pdf_direct
+        from src.render.excel_writer import SHEET_DEAL_LIST
 
-        out_path = Path(args.out) if args.out else Path("output/inbound.xlsx")
+        out_path = Path(args.out) if args.out else Path("output/deals.xlsx")
         print(f"Processing: {args.input}")
         ok, msg, tsv = process_pdf_direct(
             Path(args.input),
@@ -247,7 +259,7 @@ def main() -> None:
             args.date,
         )
         if ok:
-            print(f"Done. Output: {out_path}")
+            print(f"Done. Added to sheet '{SHEET_DEAL_LIST}' in {out_path}")
         else:
             print(f"FAILED: {msg}")
 
@@ -269,6 +281,7 @@ def main() -> None:
 
     elif args.command == "process-pdf-folder":
         from src.pipelines.full_pipeline import process_pdf_folder
+        from src.render.excel_writer import SHEET_DEAL_LIST
 
         folder = Path(args.folder)
         if not folder.is_dir():
@@ -284,7 +297,7 @@ def main() -> None:
             )
             if ok:
                 print(f"Done. {msg}")
-                print(f"Output: {out_path}")
+                print(f"Added to sheet '{SHEET_DEAL_LIST}' in {out_path}")
             else:
                 print(f"FAILED: {msg}")
 
