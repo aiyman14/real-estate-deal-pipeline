@@ -225,37 +225,31 @@ def main() -> None:
     elif args.command == "process-url":
         from src.pipelines.full_pipeline import process_article_url
 
-        out_path = Path(args.out) if args.out else None
-        print(f"Fetching article from: {args.url}")
+        out_path = Path(args.out) if args.out else Path("output/article.xlsx")
+        print(f"Processing: {args.url}")
         ok, msg, tsv = process_article_url(
             args.url,
             out_path,
         )
         if ok:
-            print("READY TO PASTE ✅")
-            print("-" * 40)
-            print(tsv)
+            print(f"Done. Output: {out_path}")
         else:
-            print("FAILED ❌")
-            print(msg)
+            print(f"FAILED: {msg}")
 
     elif args.command == "process-pdf-file":
         from src.pipelines.full_pipeline import process_pdf_direct
 
-        out_path = Path(args.out) if args.out else None
-        print(f"Reading PDF: {args.input}")
+        out_path = Path(args.out) if args.out else Path("output/inbound.xlsx")
+        print(f"Processing: {args.input}")
         ok, msg, tsv = process_pdf_direct(
             Path(args.input),
             out_path,
             args.date,
         )
         if ok:
-            print("READY TO PASTE ✅")
-            print("-" * 40)
-            print(tsv)
+            print(f"Done. Output: {out_path}")
         else:
-            print("FAILED ❌")
-            print(msg)
+            print(f"FAILED: {msg}")
 
     elif args.command == "extract-pdf-text":
         from src.fetch.pdf_reader import extract_text_from_pdf
@@ -278,23 +272,21 @@ def main() -> None:
 
         folder = Path(args.folder)
         if not folder.is_dir():
-            print(f"FAILED ❌ Not a directory: {folder}")
+            print(f"FAILED: Not a directory: {folder}")
         else:
             out_path = Path(args.out)
             print(f"Processing PDFs in: {folder}")
-            print(f"Output: {out_path}")
-            print("-" * 40)
             ok, msg, results = process_pdf_folder(
                 folder,
                 out_path,
                 args.date,
                 max_files=args.max,
             )
-            print("-" * 40)
             if ok:
-                print(f"DONE ✅ {msg}")
+                print(f"Done. {msg}")
+                print(f"Output: {out_path}")
             else:
-                print(f"FAILED ❌ {msg}")
+                print(f"FAILED: {msg}")
 
 
 if __name__ == "__main__":

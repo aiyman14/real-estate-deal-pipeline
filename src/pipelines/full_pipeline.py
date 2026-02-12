@@ -345,7 +345,6 @@ def process_pdf_folder(
         return False, f"No PDF files found in {folder_path}", []
 
     if len(pdf_files) > max_files:
-        print(f"Warning: Found {len(pdf_files)} PDFs, processing first {max_files}")
         pdf_files = pdf_files[:max_files]
 
     # Load resources once (shared across all PDFs)
@@ -363,12 +362,12 @@ def process_pdf_folder(
     fail_count = 0
 
     for i, pdf_path in enumerate(pdf_files, 1):
-        print(f"[{i}/{len(pdf_files)}] Processing: {pdf_path.name}")
+        print(f"[{i}/{len(pdf_files)}] {pdf_path.name}", end=" ... ", flush=True)
 
         # Extract text from PDF
         ok, msg, document_text = extract_text_from_pdf(pdf_path)
         if not ok:
-            print(f"  ERROR: Failed to read PDF: {msg}")
+            print("FAILED")
             results.append({"file": pdf_path.name, "success": False, "row": None, "error": msg})
             fail_count += 1
             continue
@@ -386,14 +385,14 @@ def process_pdf_folder(
 
             results.append({"file": pdf_path.name, "success": True, "row": normalized_row, "error": None})
             success_count += 1
-            print(f"  OK: {normalized_row.get('Project Name', 'Unknown')}")
+            print("OK")
 
         except ExtractionError as e:
-            print(f"  ERROR: Extraction failed: {e}")
+            print("FAILED")
             results.append({"file": pdf_path.name, "success": False, "row": None, "error": str(e)})
             fail_count += 1
         except Exception as e:
-            print(f"  ERROR: {e}")
+            print("FAILED")
             results.append({"file": pdf_path.name, "success": False, "row": None, "error": str(e)})
             fail_count += 1
 
@@ -401,7 +400,6 @@ def process_pdf_folder(
     if output_path and rendered_rows:
         output_path.parent.mkdir(parents=True, exist_ok=True)
         write_excel(rendered_rows, columns, output_path, sheet_name="Inbound")
-        print(f"\nWrote {len(rendered_rows)} rows to: {output_path}")
 
     summary = f"Processed {len(pdf_files)} PDFs: {success_count} success, {fail_count} failed"
     return success_count > 0, summary, results
