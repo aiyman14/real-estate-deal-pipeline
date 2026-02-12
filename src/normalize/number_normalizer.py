@@ -35,6 +35,7 @@ MULTIPLIERS = {
     "msek": 1_000_000,
     "mdkk": 1_000_000,
     "meur": 1_000_000,
+    "mkr": 1_000_000,  # Swedish: miljoner kronor (million kronor)
     # Billions
     "b": 1_000_000_000,
     "bn": 1_000_000_000,
@@ -52,9 +53,16 @@ CURRENCY_PATTERNS = re.compile(
     re.IGNORECASE
 )
 
-# Unit suffixes to strip (area, etc.)
+# Unit suffixes to strip (area, percentage, etc.)
 UNIT_PATTERNS = re.compile(
-    r"\s*(?:m2|m²|sqm|kvm|square\s*meters?|kvadratmeter|år|years?)\s*$",
+    r"\s*(?:m2|m²|sqm|kvm|square\s*meters?|kvadratmeter|år|years?|procent|percent)\s*$",
+    re.IGNORECASE
+)
+
+# Common Swedish trailing descriptive phrases to strip (after the number + unit)
+# These appear after the value and don't affect the numeric parsing
+TRAILING_TEXT_PATTERNS = re.compile(
+    r"\s+(?:uthyrningsbar\s+yta|total(?:t|a)?|underliggande(?:\s+\w+)*|köpeskilling|fastighetsvärde)\b.*$",
     re.IGNORECASE
 )
 
@@ -83,6 +91,10 @@ def normalize_number(raw_value: Any, as_integer: bool = True) -> Tuple[Union[str
     text = str(raw_value).strip()
     if not text:
         return ("", "low")
+
+    # Pre-process: strip common Swedish trailing descriptive phrases
+    # This handles cases like "47,696 kvm uthyrningsbar yta" -> "47,696 kvm"
+    text = TRAILING_TEXT_PATTERNS.sub("", text).strip()
 
     # Remove unit suffixes (m2, sqm, etc.)
     text = UNIT_PATTERNS.sub("", text).strip()

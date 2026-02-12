@@ -14,9 +14,10 @@ CRITICAL RULES:
 2. If a field is not clearly mentioned, return null - NEVER guess or infer
 3. Return valid JSON matching the exact schema provided
 4. For dates, extract as-is (normalization happens later)
-5. For prices/areas, extract as-is including units (normalization happens later)
-6. For property type, extract the description as-is (normalization happens later)
-7. Comments should be 1-2 factual sentences summarizing the deal - no marketing language
+5. For prices/areas, extract ONLY the number with unit (e.g., "743 mkr", "47696 kvm") - no explanatory text
+6. For property type: Use "Mixed-use" if the article mentions multiple property types (office, retail, residential, industrial, etc.)
+7. For location: Use "Multiple" if properties are in several different cities
+8. Comments should be 1-2 factual sentences summarizing the deal - no marketing language
 
 You extract completed real estate transactions from news articles."""
 
@@ -26,13 +27,13 @@ Return a JSON object with these fields (use null if not explicitly stated):
 {{
   "Country": "<Sweden|Denmark|Finland or local name>",
   "Date": "<transaction date as written>",
-  "Buyer": "<buyer name - only if explicitly stated>",
-  "Seller": "<seller name - only if explicitly stated>",
-  "Location": "<city only, not street address>",
-  "Property type": "<property type description as written>",
-  "Area, m2": "<area with units as written>",
-  "Price": "<price with currency as written>",
-  "Yield": "<yield percentage if stated>",
+  "Buyer": "<full buyer company name - only if explicitly stated>",
+  "Seller": "<full seller company name - only if explicitly stated>",
+  "Location": "<city name, or 'Multiple' if properties in several cities>",
+  "Property type": "<property type, or 'Mixed-use' if multiple types mentioned (office+retail+residential etc.)>",
+  "Area, m2": "<area as number with unit only, e.g. '47696 kvm' - no descriptive text>",
+  "Price": "<primary price as number with currency, e.g. '743 mkr' or '150 MSEK' - not multiple values>",
+  "Yield": "<yield as number with % or 'procent', e.g. '7.2%' or '7,2 procent'>",
   "Broker": "<broker/advisor name if stated>",
   "Project name": "<property/project name if stated>",
   "Comments": "<1-2 sentence factual summary>"
