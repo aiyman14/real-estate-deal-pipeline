@@ -62,18 +62,29 @@ Follow these steps exactly. Do not skip any step.
 1. Press the **Windows key** on your keyboard
 2. Type **cmd**
 3. Press **Enter** (this opens Command Prompt - a black window)
-4. Type this command (replace the path with YOUR path from Step 4):
+
+4. **First, go to the folder.** Type this command:
    ```
    cd C:\Users\vilu\OneDrive\Downloads\nordics-real-estate-automation-main
    ```
 5. Press **Enter**
-6. Type this command:
+
+6. **Check it worked.** Type this command:
+   ```
+   dir
+   ```
+7. Press **Enter**
+8. You should see a list of files including **requirements.txt** and **src**
+   - If you see "The system cannot find the path specified" → your path is wrong, see "HOW TO FIND YOUR EXACT PATH" at the bottom
+   - If you see the files → continue to the next step
+
+9. **Now install.** Type this command:
    ```
    pip install -r requirements.txt
    ```
-7. Press **Enter**
-8. Wait for it to finish (you'll see lots of text scrolling)
-9. When it's done, you'll see the blinking cursor again
+10. Press **Enter**
+11. Wait for it to finish (you'll see lots of text scrolling)
+12. When it's done, you'll see the blinking cursor again
 
 ---
 
@@ -242,6 +253,17 @@ python -m src.cli process-url --url "https://example.com/article"
 
 ## IF SOMETHING GOES WRONG
 
+### "No such file or directory: requirements.txt"
+You're not in the right folder. Do this:
+1. Find your folder in File Explorer
+2. Click in the address bar to see the full path
+3. Copy that path
+4. In Command Prompt, type `cd ` (with a space after cd)
+5. Right-click to paste your path
+6. Press Enter
+7. Type `dir` and press Enter to verify you see the files
+8. Now run `pip install -r requirements.txt`
+
 ### "python is not recognized"
 You need to reinstall Python. Make sure to check "Add Python to PATH" during installation.
 
@@ -250,6 +272,9 @@ You're not in the right folder. Run the `cd` command again with your correct pat
 
 ### "ANTHROPIC_API_KEY not set"
 You need to set your API key. Run the `set ANTHROPIC_API_KEY=YOUR-KEY` command again.
+
+### "The system cannot find the path specified"
+The folder path is wrong. See "HOW TO FIND YOUR EXACT PATH" below.
 
 ### "File not found" or "Not a directory"
 The path is wrong. Double-check your folder path by:
