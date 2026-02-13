@@ -1,314 +1,279 @@
 # Real Estate Deal Pipeline
 
-A tool that extracts deal information from real estate news articles and broker PDFs, then saves it to Excel files for easy tracking.
-
-**Works with:** Sweden, Denmark, and Finland real estate deals
+Extracts deal information from PDFs and news articles into Excel.
 
 ---
 
-# Viktor's Setup Guide
+# Viktor's Instructions
 
-This guide gives you the exact commands to copy and paste. No thinking required.
-
----
-
-## How This Tool Works
-
-**Two processes, one output file:**
-
-| Process | Input | Output Sheet |
-|---------|-------|--------------|
-| Process 1 | PDFs (IMs, Teasers) | "Deal list" |
-| Process 2 | News article URLs | "Sweden" / "Denmark" / "Finland" |
-
-Everything goes into **one file**: `output/deals.xlsx`
-
-Each time you run a command, the new deal gets **added** to the existing file. By Friday, all your deals are collected!
+Follow these steps exactly. Do not skip any step.
 
 ---
 
-## One-Time Setup (Do This First)
+## PART 1: ONE-TIME SETUP
 
 ### Step 1: Install Python
 
-1. Go to: **https://www.python.org/downloads/**
-2. Click the yellow **"Download Python"** button
-3. Run the installer
-4. **IMPORTANT:** Check the box **"Add Python to PATH"** at the bottom
-5. Click **"Install Now"**
-
-### Step 2: Get an Anthropic API Key
-
-1. Go to: **https://console.anthropic.com/**
-2. Create an account and log in
-3. Click **"API Keys"** → **"Create Key"**
-4. Copy the key (starts with `sk-ant-`)
-5. Save it somewhere (you'll need it every time)
-
-### Step 3: Install Required Packages
-
-1. Press **Windows key**, type **cmd**, press **Enter**
-2. Copy and paste this command:
-
-```
-cd C:\Users\vilu\Desktop\nordics-real-estate-automation && pip install -r requirements.txt
-```
-
-3. Press **Enter** and wait for it to finish
+1. Open your web browser
+2. Go to: **https://www.python.org/downloads/**
+3. Click the yellow **"Download Python"** button
+4. When the download finishes, open the downloaded file
+5. **IMPORTANT:** Check the box at the bottom that says **"Add Python to PATH"**
+6. Click **"Install Now"**
+7. Wait for it to finish
+8. Click **"Close"**
 
 ---
 
-## Every Time You Use the Tool
+### Step 2: Download This Program
 
-### Step 1: Open Command Prompt in the Program Folder
+1. On this GitHub page, click the green **"Code"** button
+2. Click **"Download ZIP"**
+3. The file will download to your OneDrive Downloads folder
 
-1. Press **Windows key**
+---
+
+### Step 3: Extract the ZIP File
+
+1. Open File Explorer
+2. Go to: **This PC → Downloads** (or check your OneDrive → Downloads)
+3. Find the file called **nordics-real-estate-automation-main.zip**
+4. Right-click it → **Extract All...**
+5. Click **Extract**
+6. You now have a folder called **nordics-real-estate-automation-main**
+7. **Leave this folder where it is** (in your Downloads)
+
+---
+
+### Step 4: Find Your Folder Path
+
+1. Open the **nordics-real-estate-automation-main** folder
+2. Click in the address bar at the top (where it shows the folder location)
+3. The full path will be highlighted - it will look something like:
+   ```
+   C:\Users\vilu\OneDrive\Downloads\nordics-real-estate-automation-main
+   ```
+4. **Write this path down** or copy it somewhere - you will need it
+
+---
+
+### Step 5: Install Required Packages
+
+1. Press the **Windows key** on your keyboard
+2. Type **cmd**
+3. Press **Enter** (this opens Command Prompt - a black window)
+4. Type this command (replace the path with YOUR path from Step 4):
+   ```
+   cd C:\Users\vilu\OneDrive\Downloads\nordics-real-estate-automation-main
+   ```
+5. Press **Enter**
+6. Type this command:
+   ```
+   pip install -r requirements.txt
+   ```
+7. Press **Enter**
+8. Wait for it to finish (you'll see lots of text scrolling)
+9. When it's done, you'll see the blinking cursor again
+
+---
+
+### Step 6: Get Your API Key
+
+1. Go to: **https://console.anthropic.com/**
+2. Create an account or log in
+3. Click **"API Keys"** on the left
+4. Click **"Create Key"**
+5. Copy the key (it starts with **sk-ant-**)
+6. Save this key somewhere safe - you need it every time you use the program
+
+---
+
+## PART 2: USING THE PROGRAM
+
+Every time you want to use the program, follow these steps:
+
+---
+
+### Step 1: Open Command Prompt
+
+1. Press the **Windows key**
 2. Type **cmd**
 3. Press **Enter**
-4. Copy and paste this command:
 
+---
+
+### Step 2: Go to the Program Folder
+
+Type this command (use YOUR path from the setup):
 ```
-cd C:\Users\vilu\Desktop\nordics-real-estate-automation
+cd C:\Users\vilu\OneDrive\Downloads\nordics-real-estate-automation-main
 ```
+Press **Enter**
 
-5. Press **Enter**
+---
 
-### Step 2: Set Your API Key
+### Step 3: Set Your API Key
 
-Copy and paste this command (replace `YOUR-KEY-HERE` with your actual API key):
-
+Type this command (replace YOUR-KEY with your actual API key):
 ```
-set ANTHROPIC_API_KEY=YOUR-KEY-HERE
+set ANTHROPIC_API_KEY=YOUR-KEY
 ```
+Press **Enter**
 
-**Example (not a real key):**
+Example (not a real key):
 ```
 set ANTHROPIC_API_KEY=sk-ant-api03-ABC123xyz456DEF789
 ```
 
 ---
 
-## Process 1: Extract from PDFs (Incoming Deals)
+## PROCESS PDFS (Incoming Deals)
 
-### Option A: Process ONE PDF
+### To Process Multiple PDFs at Once:
 
-Copy and paste this command (change the PDF path to your actual file):
+**Step 1: Create a folder for your PDFs**
 
-```
-python -m src.cli process-pdf-file --input "C:\Users\vilu\Desktop\your_file.pdf"
-```
-
-**Result:** Added to "Deal list" sheet in `output/deals.xlsx`
-
----
-
-### Option B: Process MULTIPLE PDFs at Once (Batch)
-
-This is the easiest way to process many PDFs. Follow these steps exactly:
-
-#### Step 1: Create a folder for your PDFs
-
-1. Go to your Desktop
-2. Right-click → **New** → **Folder**
-3. Name it exactly: **PDFs**
-
-So now you have a folder at: `C:\Users\vilu\Desktop\PDFs`
-
-#### Step 2: Put your PDF files in that folder
-
-1. Copy all the PDFs you want to process
-2. Paste them into `C:\Users\vilu\Desktop\PDFs`
-
-#### Step 3: Open Command Prompt and go to the program folder
-
-1. Press **Windows key**
-2. Type **cmd**
-3. Press **Enter**
-4. Copy and paste:
-
-```
-cd C:\Users\vilu\Desktop\nordics-real-estate-automation
-```
-
-5. Press **Enter**
-
-#### Step 4: Set your API key
-
-Copy and paste (use your real key):
-
-```
-set ANTHROPIC_API_KEY=sk-ant-api03-YOUR-ACTUAL-KEY-HERE
-```
-
-Press **Enter**
-
-#### Step 5: Run the batch command
-
-Copy and paste this exact command:
-
-```
-python -m src.cli process-pdf-folder --folder "C:\Users\vilu\Desktop\PDFs"
-```
-
-Press **Enter**
-
-#### What happens:
-
-- The program will show progress like: `[1/5] document1.pdf ... OK`
-- When done, you'll see: `Added to sheet 'Deal list' in output/deals.xlsx`
-- All your deals are now in the Excel file!
-
-#### Optional: Set a date for all PDFs
-
-If you want to set a "date received" for all the PDFs:
-
-```
-python -m src.cli process-pdf-folder --folder "C:\Users\vilu\Desktop\PDFs" --date "2024/02/12"
-```
-
----
-
-## Process 2: Extract from Article URLs (Transactions)
-
-For each article you want to process, copy and paste this command (change the URL):
-
-```
-python -m src.cli process-url --url "https://www.fastighetsvarlden.se/notiser/YOUR-ARTICLE-URL/"
-```
-
-**Result:** Added to "Sweden" (or Denmark/Finland) sheet in `output/deals.xlsx`
-
-**Processing multiple articles:** Just run the command again with a different URL. Each one gets added to the file.
-
----
-
-## Finding Your Output
-
-Your Excel file is here:
-
-```
-C:\Users\vilu\Desktop\nordics-real-estate-automation\output\deals.xlsx
-```
-
-**To open it:**
 1. Open File Explorer
-2. Go to: Desktop → nordics-real-estate-automation → output
-3. Double-click `deals.xlsx`
+2. Go to your Downloads folder
+3. Right-click → **New** → **Folder**
+4. Name it exactly: **PDFs**
+
+Your PDFs folder is now at:
+```
+C:\Users\vilu\OneDrive\Downloads\PDFs
+```
+
+**Step 2: Put your PDF files in that folder**
+
+Copy all the PDFs you want to process into the **PDFs** folder.
+
+**Step 3: Open Command Prompt and run these commands**
+
+Open Command Prompt (Windows key → type cmd → Enter), then run these 3 commands:
+
+Command 1 - Go to program folder:
+```
+cd C:\Users\vilu\OneDrive\Downloads\nordics-real-estate-automation-main
+```
+
+Command 2 - Set API key:
+```
+set ANTHROPIC_API_KEY=YOUR-KEY
+```
+
+Command 3 - Process all PDFs:
+```
+python -m src.cli process-pdf-folder --folder "C:\Users\vilu\OneDrive\Downloads\PDFs"
+```
+
+**What you'll see:**
+```
+Processing PDFs in: C:\Users\vilu\OneDrive\Downloads\PDFs
+[1/3] document1.pdf ... OK
+[2/3] document2.pdf ... OK
+[3/3] document3.pdf ... OK
+Done. Processed 3 PDFs: 3 success, 0 failed
+Added to sheet 'Deal list' in output/deals.xlsx
+```
 
 ---
 
-## The Output File Has 4 Sheets
+### To Process One PDF:
 
 ```
-deals.xlsx
-├── Deal list   ← All PDFs go here
-├── Sweden      ← Swedish articles go here
-├── Denmark     ← Danish articles go here
-└── Finland     ← Finnish articles go here
+python -m src.cli process-pdf-file --input "C:\Users\vilu\OneDrive\Downloads\your_file.pdf"
 ```
 
 ---
 
-## Quick Reference (Copy-Paste Commands)
+## PROCESS ARTICLES (Transactions)
 
-**Go to program folder:**
-```
-cd C:\Users\vilu\Desktop\nordics-real-estate-automation
-```
+For each article URL, run this command (change the URL):
 
-**Set API key:**
 ```
-set ANTHROPIC_API_KEY=sk-ant-api03-YOUR-KEY-HERE
+python -m src.cli process-url --url "https://www.fastighetsvarlden.se/notiser/your-article/"
 ```
 
-**Process one PDF:**
+Run it once for each article. Each one gets added to the correct country sheet (Sweden/Denmark/Finland).
+
+---
+
+## FIND YOUR OUTPUT FILE
+
+Your Excel file is saved inside the program folder:
+
+1. Open File Explorer
+2. Go to: **OneDrive → Downloads → nordics-real-estate-automation-main → output**
+3. Open **deals.xlsx**
+
+The file has 4 sheets:
+- **Deal list** - all your PDFs go here
+- **Sweden** - Swedish articles
+- **Denmark** - Danish articles
+- **Finland** - Finnish articles
+
+---
+
+## QUICK REFERENCE
+
+Open Command Prompt, then run these commands in order:
+
+**1. Go to folder:**
 ```
-python -m src.cli process-pdf-file --input "C:\Users\vilu\Desktop\your_file.pdf"
+cd C:\Users\vilu\OneDrive\Downloads\nordics-real-estate-automation-main
 ```
 
-**Process all PDFs in a folder:**
+**2. Set API key:**
 ```
-python -m src.cli process-pdf-folder --folder "C:\Users\vilu\Desktop\PDFs"
+set ANTHROPIC_API_KEY=YOUR-KEY
 ```
 
-**Process an article URL:**
+**3. Process PDFs:**
+```
+python -m src.cli process-pdf-folder --folder "C:\Users\vilu\OneDrive\Downloads\PDFs"
+```
+
+**4. Process article:**
 ```
 python -m src.cli process-url --url "https://example.com/article"
 ```
 
 ---
 
-## Weekly Workflow
-
-### Throughout the week:
-
-**When you get a PDF from a broker:**
-1. Put it in `C:\Users\vilu\Desktop\PDFs`
-2. Run the batch command (or process individually)
-
-**When you see a transaction article:**
-1. Copy the URL
-2. Run the process-url command
-
-### On Friday:
-
-1. Open `output/deals.xlsx`
-2. Everything is organized into the correct sheets
-3. Copy-paste into your presentation
-
----
-
-## Troubleshooting
+## IF SOMETHING GOES WRONG
 
 ### "python is not recognized"
-Reinstall Python and check "Add Python to PATH"
+You need to reinstall Python. Make sure to check "Add Python to PATH" during installation.
 
 ### "No module named src"
-You're not in the right folder. Run:
-```
-cd C:\Users\vilu\Desktop\nordics-real-estate-automation
-```
+You're not in the right folder. Run the `cd` command again with your correct path.
 
 ### "ANTHROPIC_API_KEY not set"
-Run this again (with your real key):
-```
-set ANTHROPIC_API_KEY=sk-ant-api03-YOUR-KEY-HERE
-```
+You need to set your API key. Run the `set ANTHROPIC_API_KEY=YOUR-KEY` command again.
 
-### "File not found"
-Check the file path is correct. You can drag and drop files into Command Prompt to paste their path.
-
-### Starting fresh with a new file
-Delete the old file and run any command:
-```
-del output\deals.xlsx
-```
+### "File not found" or "Not a directory"
+The path is wrong. Double-check your folder path by:
+1. Open the folder in File Explorer
+2. Click in the address bar
+3. Copy the exact path shown
+4. Use that path in your command
 
 ---
 
-## What Gets Extracted
+## HOW TO FIND YOUR EXACT PATH
 
-### From PDFs (Deal list sheet):
-- Date received, Week number
-- Project Name, Type (IM/Teaser)
-- Country, Location, Address
-- Property type, Area
-- NOI, Yield, Occupancy, WAULT
-- Deal value, Comments
+If the commands don't work, you need to find your exact folder path:
 
-### From Articles (Country sheets):
-- Date, Buyer, Seller
-- Country, Location
-- Property type, Area
-- Price (in millions), Price per sqm
-- Yield, Comments, Source URL
+1. Open File Explorer
+2. Navigate to the **nordics-real-estate-automation-main** folder
+3. Click once in the address bar at the top
+4. The full path will be highlighted and selected
+5. Press **Ctrl+C** to copy it
+6. Use this path in your commands
 
----
+The path might look like:
+- `C:\Users\vilu\OneDrive\Downloads\nordics-real-estate-automation-main`
+- `C:\Users\vilu\Downloads\nordics-real-estate-automation-main`
+- Something else depending on your OneDrive setup
 
-## Output Details
-
-- **Price is in millions** — 743 MSEK shows as "743"
-- **Week number is auto-calculated** from the date
-- **Price per sqm is auto-calculated** from price and area
-- **Property types are normalized** — "warehouse" becomes "Logistics"
-- **Cities are translated** — Göteborg → Gothenburg
+Whatever path you see - that's the one to use in all the commands.
