@@ -51,7 +51,7 @@ Each time you run a command, the new deal gets **added** to the existing file. B
 2. Copy and paste this command:
 
 ```
-cd C:\Users\vilu\Desktop\real-estate-deal-pipeline && pip install -r requirements.txt
+cd C:\Users\vilu\Desktop\nordics-real-estate-automation && pip install -r requirements.txt
 ```
 
 3. Press **Enter** and wait for it to finish
@@ -68,7 +68,7 @@ cd C:\Users\vilu\Desktop\real-estate-deal-pipeline && pip install -r requirement
 4. Copy and paste this command:
 
 ```
-cd C:\Users\vilu\Desktop\real-estate-deal-pipeline
+cd C:\Users\vilu\Desktop\nordics-real-estate-automation
 ```
 
 5. Press **Enter**
@@ -127,7 +127,7 @@ So now you have a folder at: `C:\Users\vilu\Desktop\PDFs`
 4. Copy and paste:
 
 ```
-cd C:\Users\vilu\Desktop\real-estate-deal-pipeline
+cd C:\Users\vilu\Desktop\nordics-real-estate-automation
 ```
 
 5. Press **Enter**
@@ -187,12 +187,12 @@ python -m src.cli process-url --url "https://www.fastighetsvarlden.se/notiser/YO
 Your Excel file is here:
 
 ```
-C:\Users\vilu\Desktop\real-estate-deal-pipeline\output\deals.xlsx
+C:\Users\vilu\Desktop\nordics-real-estate-automation\output\deals.xlsx
 ```
 
 **To open it:**
 1. Open File Explorer
-2. Go to: Desktop → real-estate-deal-pipeline → output
+2. Go to: Desktop → nordics-real-estate-automation → output
 3. Double-click `deals.xlsx`
 
 ---
@@ -213,7 +213,7 @@ deals.xlsx
 
 **Go to program folder:**
 ```
-cd C:\Users\vilu\Desktop\real-estate-deal-pipeline
+cd C:\Users\vilu\Desktop\nordics-real-estate-automation
 ```
 
 **Set API key:**
@@ -266,7 +266,7 @@ Reinstall Python and check "Add Python to PATH"
 ### "No module named src"
 You're not in the right folder. Run:
 ```
-cd C:\Users\vilu\Desktop\real-estate-deal-pipeline
+cd C:\Users\vilu\Desktop\nordics-real-estate-automation
 ```
 
 ### "ANTHROPIC_API_KEY not set"
